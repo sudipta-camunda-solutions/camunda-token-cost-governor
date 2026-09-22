@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                   xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   id="Definitions_AiAgentTaskCostTracking"
+                   targetNamespace="http://bpmn.io/schema/bpmn"
+                   exporter="camunda-token-cost-governor"
+                   exporterVersion="0.2.0">
+
+  <bpmn:error id="Error_PriceNotFound" name="Price not found" errorCode="PRICE_NOT_FOUND" />
+
+  <!--
+    Each iteration of the AI Agent Task is followed by one Token Cost Reporter call that computes
+    that call's token count and USD cost, and accumulates it into totalCostMicros for the whole
+    process instance.
+
+    "AI Agent Task" here is a PLACEHOLDER service task (job type under the `demo.*` namespace),
+    standing in for Camunda's real io.camunda.agenticai:aiagent:task:2 element - substitute a real
+    one when adapting this example. Camunda's native AI Agent Task already reports token usage as
+    part of its own result (see README's token-accounting limitations note); this placeholder's
+    `agentResult` output stands in for that same shape (`agentResult.tokenUsage.inputTokens`/
+    `.outputTokens`, `agentResult.model`), which is exactly what Token Cost Reporter reads via
+    FEEL - no interception, no gateway, nothing between the AI Agent Task and the real provider.
+
+    The BoundaryEvent_PriceNotFound branch below is one illustrative way to handle an unpriced
+    model (logged and the loop ends) - it is not a required gate. Delete it, or let PRICE_NOT_FOUND
+    surface as an ordinary Zeebe incident instead, if you'd rather handle it differently.
+  -->
+  <bpmn:process id="ai-agent-task-cost-tracking" name="AI Agent Task loop with token/cost tracking" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Start">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=0" target="iterationCount" />
+          <zeebe:output source="=0" target="totalCostMicros" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>Flow_StartToAgent</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Activity_AiAgentTask" name="AI Agent Task (placeholder - see README)">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="demo.aiagent:task:1" retries="1" />
+        <zeebe:ioMapping>
+          <!-- Once any explicit zeebe:output mapping is present on a task, Zeebe stops
+               auto-propagating every job-returned variable to process scope and only merges
+               explicitly mapped ones - so continueLoop/agentResult must be listed here too, or
+               downstream expressions never see them (verified this the hard way via a failing
+               process test before adding this mapping). -->
+          <zeebe:output source="=iterationCount + 1" target="iterationCount" />
+          <zeebe:output source="=continueLoop" target="continueLoop" />
+          <zeebe:output source="=agentResult" target="agentResult" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_StartToAgent</bpmn:incoming>
+      <bpmn:incoming>Flow_LoopBackToAgent</bpmn:incoming>
+      <bpmn:outgoing>Flow_AgentToTokenCost</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Activity_TokenCost" name="Token cost">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.github.camunda:token-cost-governor:1" retries="1" />
+        <zeebe:ioMapping>
+          <zeebe:input source="&quot;anthropic&quot;" target="provider" />
+          <zeebe:input source="=agentResult.model" target="model" />
+          <zeebe:input source="=agentResult.tokenUsage.inputTokens" target="inputTokens" />
+          <zeebe:input source="=agentResult.tokenUsage.outputTokens" target="outputTokens" />
+          <zeebe:input source="&quot;{{secrets.GOVERNOR_PRICE_TABLE}}&quot;" target="priceTableSecret" />
+          <zeebe:output source="=tokenCostResult" target="tokenCostResult" />
+          <zeebe:output source="=totalCostMicros + tokenCostResult.costMicros" target="totalCostMicros" />
+        </zeebe:ioMapping>
+        <zeebe:taskHeaders>
+          <zeebe:header key="resultVariable" value="tokenCostResult" />
+          <zeebe:header key="elementTemplateId" value="io.github.camunda.TokenCostGovernor.v2" />
+          <zeebe:header key="elementTemplateVersion" value="2" />
+        </zeebe:taskHeaders>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_AgentToTokenCost</bpmn:incoming>
+      <bpmn:outgoing>Flow_TokenCostToGateway</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:boundaryEvent id="BoundaryEvent_PriceNotFound" name="PRICE_NOT_FOUND" attachedToRef="Activity_TokenCost">
+      <bpmn:outgoing>Flow_BoundaryToLog</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_PriceNotFound" />
+    </bpmn:boundaryEvent>
+
+    <bpmn:serviceTask id="Activity_LogUnknownModelPrice" name="Log unknown model price">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="demo.log:unknown-model-price:1" retries="1" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_BoundaryToLog</bpmn:incoming>
+      <bpmn:outgoing>Flow_LogToEnd</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="Gateway_Continue" name="Continue looping?" default="Flow_ToDone">
+      <bpmn:incoming>Flow_TokenCostToGateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_LoopBackToAgent</bpmn:outgoing>
+      <bpmn:outgoing>Flow_ToDone</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:sequenceFlow id="Flow_LoopBackToAgent" name="agent wants another round" sourceRef="Gateway_Continue" targetRef="Activity_AiAgentTask">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=continueLoop = true and iterationCount &lt; 3</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_ToDone" name="done" sourceRef="Gateway_Continue" targetRef="EndEvent_Done" />
+
+    <bpmn:endEvent id="EndEvent_Done" name="Done">
+      <bpmn:incoming>Flow_ToDone</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="EndEvent_UnknownModelPrice" name="Unknown model price">
+      <bpmn:incoming>Flow_LogToEnd</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_StartToAgent" sourceRef="StartEvent_1" targetRef="Activity_AiAgentTask" />
+    <bpmn:sequenceFlow id="Flow_AgentToTokenCost" sourceRef="Activity_AiAgentTask" targetRef="Activity_TokenCost" />
+    <bpmn:sequenceFlow id="Flow_TokenCostToGateway" sourceRef="Activity_TokenCost" targetRef="Gateway_Continue" />
+    <bpmn:sequenceFlow id="Flow_BoundaryToLog" sourceRef="BoundaryEvent_PriceNotFound" targetRef="Activity_LogUnknownModelPrice" />
+    <bpmn:sequenceFlow id="Flow_LogToEnd" sourceRef="Activity_LogUnknownModelPrice" targetRef="EndEvent_UnknownModelPrice" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="ai-agent-task-cost-tracking">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_AiAgentTask_di" bpmnElement="Activity_AiAgentTask">
+        <dc:Bounds x="280" y="200" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_TokenCost_di" bpmnElement="Activity_TokenCost">
+        <dc:Bounds x="440" y="200" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Continue_di" bpmnElement="Gateway_Continue" isMarkerVisible="true">
+        <dc:Bounds x="595" y="215" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Done_di" bpmnElement="EndEvent_Done">
+        <dc:Bounds x="702" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_PriceNotFound_di" bpmnElement="BoundaryEvent_PriceNotFound">
+        <dc:Bounds x="472" y="262" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_LogUnknownModelPrice_di" bpmnElement="Activity_LogUnknownModelPrice">
+        <dc:Bounds x="440" y="360" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_UnknownModelPrice_di" bpmnElement="EndEvent_UnknownModelPrice">
+        <dc:Bounds x="602" y="382" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_StartToAgent_di" bpmnElement="Flow_StartToAgent">
+        <di:waypoint x="188" y="240" />
+        <di:waypoint x="280" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AgentToTokenCost_di" bpmnElement="Flow_AgentToTokenCost">
+        <di:waypoint x="380" y="240" />
+        <di:waypoint x="440" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_TokenCostToGateway_di" bpmnElement="Flow_TokenCostToGateway">
+        <di:waypoint x="540" y="240" />
+        <di:waypoint x="595" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToDone_di" bpmnElement="Flow_ToDone">
+        <di:waypoint x="645" y="240" />
+        <di:waypoint x="702" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_LoopBackToAgent_di" bpmnElement="Flow_LoopBackToAgent">
+        <di:waypoint x="620" y="215" />
+        <di:waypoint x="620" y="120" />
+        <di:waypoint x="330" y="120" />
+        <di:waypoint x="330" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_BoundaryToLog_di" bpmnElement="Flow_BoundaryToLog">
+        <di:waypoint x="490" y="298" />
+        <di:waypoint x="490" y="360" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_LogToEnd_di" bpmnElement="Flow_LogToEnd">
+        <di:waypoint x="540" y="400" />
+        <di:waypoint x="602" y="400" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,9 @@
+[
+  { "provider": "anthropic", "model": "claude-opus-4-1", "inputPricePerMillionUsd": 15.00, "outputPricePerMillionUsd": 75.00, "currency": "USD" },
+  { "provider": "anthropic", "model": "claude-sonnet-4-5", "inputPricePerMillionUsd": 3.00, "outputPricePerMillionUsd": 15.00, "currency": "USD" },
+  { "provider": "anthropic", "model": "claude-haiku-4-5", "inputPricePerMillionUsd": 1.00, "outputPricePerMillionUsd": 5.00, "currency": "USD" },
+  { "provider": "openai", "model": "gpt-5", "inputPricePerMillionUsd": 1.25, "outputPricePerMillionUsd": 10.00, "currency": "USD" },
+  { "provider": "openai", "model": "gpt-5-mini", "inputPricePerMillionUsd": 0.25, "outputPricePerMillionUsd": 2.00, "currency": "USD" },
+  { "provider": "google-gemini-api", "model": "gemini-2.5-pro", "inputPricePerMillionUsd": 1.25, "outputPricePerMillionUsd": 10.00, "currency": "USD" },
+  { "provider": "google-gemini-api", "model": "gemini-2.5-flash", "inputPricePerMillionUsd": 0.30, "outputPricePerMillionUsd": 2.50, "currency": "USD" }
+]

@@ -1,0 +1,219 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.camunda</groupId>
+    <artifactId>camunda-token-cost-governor</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>governor-connector</artifactId>
+  <packaging>jar</packaging>
+
+  <name>governor-connector</name>
+  <description>Camunda 8 outbound connector that computes token count and USD cost for one LLM call, from token counts the process already has and a price table (GOVERNOR_PRICE_TABLE cluster secret, falling back to a bundled default). Fully self-contained: no HTTP calls, no database.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.camunda.connector</groupId>
+      <artifactId>connector-core</artifactId>
+      <version>${version.connectors}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.camunda.connector</groupId>
+      <artifactId>connector-validation</artifactId>
+      <version>${version.connectors}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <!-- Compile-time only: read by the element-template-generator-maven-plugin below. -->
+      <groupId>io.camunda.connector</groupId>
+      <artifactId>element-template-generator-annotations</artifactId>
+      <version>${version.connectors}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${version.jackson}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>2.0.18</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- micrometer-core is "provided": camunda/connectors-bundle already ships it transitively
+         (via camunda-spring-boot-starter), so it's on the classpath at runtime once this
+         connector's -with-dependencies jar is mounted via LOADER_PATH (see docker/Dockerfile.connector)
+         - shading a second copy would risk duplicate-class/version conflicts on that single
+         merged classpath. It's still needed here at compile/test scope to reference
+         io.micrometer.core.instrument.* directly. -->
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-core</artifactId>
+      <version>${version.micrometer}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <!-- Brings PrometheusMeterRegistry onto connectors-bundle's classpath purely by being
+           shaded into this module's -with-dependencies jar - Spring Boot's own
+           PrometheusMetricsExportAutoConfiguration (already present via
+           spring-boot-starter-actuator) then auto-registers it and exposes /actuator/prometheus,
+           with zero changes to connectors-bundle itself. micrometer-core is excluded since it's
+           declared "provided" above instead, to avoid a duplicate copy. -->
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+      <version>${version.micrometer}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>io.micrometer</groupId>
+          <artifactId>micrometer-core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- No HTTP client dependency needed: this connector makes no network calls at all. -->
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${version.junit-jupiter}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${version.assertj}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${version.mockito}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${version.mockito}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- Provides OutboundConnectorContextBuilder for SDK-level operation tests. -->
+      <groupId>io.camunda.connector</groupId>
+      <artifactId>connector-runtime-test</artifactId>
+      <version>${version.connectors}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- Full-process test: deploys bpmn/ai-agent-task-cost-tracking.bpmn against a real
+           (Testcontainers-backed) Zeebe engine and asserts the accumulated cost lands correctly
+           as a process variable. Versioned independently of io.camunda.connector:* - see parent pom.xml. -->
+      <groupId>io.camunda</groupId>
+      <artifactId>camunda-process-test-java</artifactId>
+      <version>${version.camunda-process-test}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- camunda-process-test-java transitively pulls Testcontainers, which pulls its own
+           junit-platform-commons; without this explicit pin, dependency mediation can select
+           an older junit-platform-commons than junit-jupiter 6.1.2 expects, causing an
+           IllegalAccessError at test runtime on a split-version classpath (same issue
+           camunda-ai-guardrail's pom.xml documents and works around identically). -->
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-commons</artifactId>
+      <version>6.1.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>governor-connector-${project.version}</finalName>
+    <testResources>
+      <testResource>
+        <directory>${project.basedir}/src/test/resources</directory>
+      </testResource>
+      <testResource>
+        <!-- The repo-root bpmn/ directory (see repo layout) - re-declared here rather than
+             copied, so GovernorProcessTest can deploy the same demo processes documented in the
+             README via addResourceFromClasspath, without a working-directory-dependent file path
+             (this module's tests run with governor-connector/ as the JVM working directory, not
+             the reactor root, so a plain "bpmn/..." addResourceFile path would never resolve). -->
+        <directory>${project.basedir}/../bpmn</directory>
+        <targetPath>bpmn</targetPath>
+      </testResource>
+    </testResources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <!-- Produces governor-connector-<version>-with-dependencies.jar as an attached
+             artifact, mounted into camunda/connectors-bundle via LOADER_PATH (see
+             docker/Dockerfile.connector). The thin jar (main artifact) has no bundled
+             dependencies and won't run there. -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>${version.maven-shade-plugin}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>with-dependencies</shadedClassifierName>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>io.camunda.connector</groupId>
+        <artifactId>element-template-generator-maven-plugin</artifactId>
+        <version>${version.connectors}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>generate-templates</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <!-- Repo-level element-templates/ directory (see repo layout), not nested inside
+               this module, so it's discoverable as a single top-level artifact regardless of
+               which module produces it. -->
+          <outputDirectory>${project.basedir}/../element-templates</outputDirectory>
+          <connectors>
+            <connector>
+              <connectorClass>io.github.camunda.connector.GovernorConnector</connectorClass>
+              <files>
+                <file>
+                  <templateId>io.github.camunda.TokenCostGovernor.v2</templateId>
+                  <templateFileName>token-cost-governor.json</templateFileName>
+                </file>
+              </files>
+            </connector>
+          </connectors>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

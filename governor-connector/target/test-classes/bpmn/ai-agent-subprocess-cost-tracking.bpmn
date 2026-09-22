@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                   xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+                   id="Definitions_AiAgentSubprocessCostTracking"
+                   targetNamespace="http://bpmn.io/schema/bpmn"
+                   exporter="camunda-token-cost-governor"
+                   exporterVersion="0.2.0">
+
+  <!--
+    Purely illustrative - not exercised by any test in this project (see README). "AI Agent
+    Sub-process" is a PLACEHOLDER ad-hoc-sub-process (job type under the `demo.*` namespace),
+    standing in for Camunda's real io.camunda.agenticai:aiagent:subprocess:2 element.
+
+    Unlike the deleted gateway-based design, this pattern now works for the Sub-process element
+    without any interception: per-call checkpoints inside the sub-process's opaque internal
+    tool-call loop are still impossible (there are no BPMN-visible activations between individual
+    model calls inside it) - but Token Cost Reporter doesn't need per-call visibility, only the
+    sub-process's own terminal result, which IS BPMN-visible at its completion (same
+    agentResult.tokenUsage shape as the Task pattern). One connector call after the sub-process
+    reports the whole sub-process's aggregate cost.
+  -->
+  <bpmn:process id="ai-agent-subprocess-cost-tracking" name="AI Agent Sub-process with token/cost tracking" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Start">
+      <bpmn:outgoing>Flow_StartToSubprocess</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:adHocSubProcess id="Activity_AiAgentSubprocess" name="AI Agent Sub-process (placeholder - see README)">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="demo.aiagent:subprocess:1" retries="1" />
+        <zeebe:ioMapping>
+          <zeebe:output source="=agentResult" target="agentResult" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_StartToSubprocess</bpmn:incoming>
+      <bpmn:outgoing>Flow_SubprocessToTokenCost</bpmn:outgoing>
+      <bpmn:task id="Activity_ExampleTool" name="Example tool">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="demo.tool:example:1" retries="1" />
+        </bpmn:extensionElements>
+      </bpmn:task>
+    </bpmn:adHocSubProcess>
+
+    <bpmn:serviceTask id="Activity_TokenCost" name="Token cost">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.github.camunda:token-cost-governor:1" retries="1" />
+        <zeebe:ioMapping>
+          <zeebe:input source="&quot;anthropic&quot;" target="provider" />
+          <zeebe:input source="=agentResult.model" target="model" />
+          <zeebe:input source="=agentResult.tokenUsage.inputTokens" target="inputTokens" />
+          <zeebe:input source="=agentResult.tokenUsage.outputTokens" target="outputTokens" />
+          <zeebe:input source="&quot;{{secrets.GOVERNOR_PRICE_TABLE}}&quot;" target="priceTableSecret" />
+          <zeebe:output source="=tokenCostResult" target="tokenCostResult" />
+        </zeebe:ioMapping>
+        <zeebe:taskHeaders>
+          <zeebe:header key="resultVariable" value="tokenCostResult" />
+          <zeebe:header key="elementTemplateId" value="io.github.camunda.TokenCostGovernor.v2" />
+          <zeebe:header key="elementTemplateVersion" value="2" />
+        </zeebe:taskHeaders>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_SubprocessToTokenCost</bpmn:incoming>
+      <bpmn:outgoing>Flow_TokenCostToEnd</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="EndEvent_Done" name="Done">
+      <bpmn:incoming>Flow_TokenCostToEnd</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:textAnnotation id="TextAnnotation_Reporting">
+      <bpmn:text>Per-call gating inside the sub-process's tool-call loop is still impossible (no BPMN-visible activations between individual model calls) - but terminal cost reporting only needs the sub-process's own completion result, which is BPMN-visible here.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_1" sourceRef="Activity_AiAgentSubprocess" targetRef="TextAnnotation_Reporting" />
+
+    <bpmn:sequenceFlow id="Flow_StartToSubprocess" sourceRef="StartEvent_1" targetRef="Activity_AiAgentSubprocess" />
+    <bpmn:sequenceFlow id="Flow_SubprocessToTokenCost" sourceRef="Activity_AiAgentSubprocess" targetRef="Activity_TokenCost" />
+    <bpmn:sequenceFlow id="Flow_TokenCostToEnd" sourceRef="Activity_TokenCost" targetRef="EndEvent_Done" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="ai-agent-subprocess-cost-tracking">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="202" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_AiAgentSubprocess_di" bpmnElement="Activity_AiAgentSubprocess">
+        <dc:Bounds x="260" y="180" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_TokenCost_di" bpmnElement="Activity_TokenCost">
+        <dc:Bounds x="480" y="180" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Done_di" bpmnElement="EndEvent_Done">
+        <dc:Bounds x="642" y="202" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_Reporting_di" bpmnElement="TextAnnotation_Reporting">
+        <dc:Bounds x="270" y="40" width="280" height="105" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_StartToSubprocess_di" bpmnElement="Flow_StartToSubprocess">
+        <di:waypoint x="188" y="220" />
+        <di:waypoint x="260" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_SubprocessToTokenCost_di" bpmnElement="Flow_SubprocessToTokenCost">
+        <di:waypoint x="420" y="220" />
+        <di:waypoint x="480" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_TokenCostToEnd_di" bpmnElement="Flow_TokenCostToEnd">
+        <di:waypoint x="580" y="220" />
+        <di:waypoint x="642" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_1_di" bpmnElement="Association_1">
+        <di:waypoint x="360" y="180" />
+        <di:waypoint x="380" y="145" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

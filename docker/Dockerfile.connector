@@ -1,0 +1,15 @@
+# Custom connectors are hosted by mounting a fat jar into Camunda's own connectors-bundle image
+# and pointing LOADER_PATH at it - the documented pattern (see
+# docs.camunda.io/docs/components/connectors/custom-built-connectors/host-custom-connectors/),
+# mirrored exactly from the sibling camunda-ai-guardrail project's own Dockerfile.
+#
+# The tag is pinned to exactly the connector SDK version this project builds against (see the
+# reactor pom.xml's version.connectors) - a mismatch is a documented cause of deserialization
+# errors between the bundle's own connector-core and this jar's.
+FROM camunda/connectors-bundle:8.9.12
+
+# Matches governor-connector/pom.xml's <finalName>; rebuild (mvn -pl governor-connector package)
+# before rebuilding this image if the connector's code or version changes.
+COPY governor-connector/target/governor-connector-0.1.0-SNAPSHOT-with-dependencies.jar /opt/custom/governor-connector.jar
+
+ENV LOADER_PATH=/opt/custom

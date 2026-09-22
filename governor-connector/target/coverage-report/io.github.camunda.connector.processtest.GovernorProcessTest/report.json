@@ -1,0 +1,40 @@
+{
+  "id" : "io.github.camunda.connector.processtest.GovernorProcessTest",
+  "name" : "GovernorProcessTest",
+  "runs" : [ {
+    "name" : "unknownModelPrice_takesBoundaryEventBranchInsteadOfDone()",
+    "coverages" : [ {
+      "processDefinitionId" : "ai-agent-task-cost-tracking",
+      "completedElements" : [ "StartEvent_1", "Activity_AiAgentTask", "Activity_TokenCost", "BoundaryEvent_PriceNotFound", "Activity_LogUnknownModelPrice", "EndEvent_UnknownModelPrice" ],
+      "takenSequenceFlows" : [ "Flow_AgentToTokenCost", "Flow_BoundaryToLog", "Flow_LogToEnd", "Flow_StartToAgent" ],
+      "coverage" : 0.6666666666666666
+    } ]
+  }, {
+    "name" : "singleIteration_completesViaDone()",
+    "coverages" : [ {
+      "processDefinitionId" : "ai-agent-task-cost-tracking",
+      "completedElements" : [ "StartEvent_1", "Activity_AiAgentTask", "Activity_TokenCost", "Gateway_Continue", "EndEvent_Done" ],
+      "takenSequenceFlows" : [ "Flow_AgentToTokenCost", "Flow_StartToAgent", "Flow_ToDone", "Flow_TokenCostToGateway" ],
+      "coverage" : 0.6
+    } ]
+  }, {
+    "name" : "loopsTwiceThenCompletes()",
+    "coverages" : [ {
+      "processDefinitionId" : "ai-agent-task-cost-tracking",
+      "completedElements" : [ "StartEvent_1", "Activity_AiAgentTask", "Activity_TokenCost", "Gateway_Continue", "EndEvent_Done" ],
+      "takenSequenceFlows" : [ "Flow_AgentToTokenCost", "Flow_LoopBackToAgent", "Flow_StartToAgent", "Flow_ToDone", "Flow_TokenCostToGateway" ],
+      "coverage" : 0.6666666666666666
+    } ]
+  } ],
+  "models" : [ {
+    "processDefinitionId" : "ai-agent-task-cost-tracking",
+    "totalElementCount" : 15,
+    "version" : "1"
+  } ],
+  "coverages" : [ {
+    "processDefinitionId" : "ai-agent-task-cost-tracking",
+    "completedElements" : [ "StartEvent_1", "Activity_AiAgentTask", "Activity_TokenCost", "BoundaryEvent_PriceNotFound", "Activity_LogUnknownModelPrice", "EndEvent_UnknownModelPrice", "Gateway_Continue", "EndEvent_Done" ],
+    "takenSequenceFlows" : [ "Flow_AgentToTokenCost", "Flow_BoundaryToLog", "Flow_LogToEnd", "Flow_StartToAgent", "Flow_ToDone", "Flow_TokenCostToGateway", "Flow_LoopBackToAgent" ],
+    "coverage" : 1.0
+  } ]
+}

@@ -1,0 +1,141 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.github.camunda</groupId>
+  <artifactId>camunda-token-cost-governor</artifactId>
+  <packaging>pom</packaging>
+  <version>0.1.0-SNAPSHOT</version>
+
+  <name>camunda-token-cost-governor</name>
+  <description>Token count and USD cost reporting for Camunda 8 Agentic AI (AI Agent Task / AI Agent Sub-process) LLM calls: a self-contained, BPMN-visible outbound connector, without a database. Price data is centrally configured via a Camunda cluster secret.</description>
+
+  <modules>
+    <module>governor-connector</module>
+  </modules>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <!-- Java 21 is required, not just recommended: element-template-generator-annotations
+         ships class files with major version 65 (Java 21), matching camunda-ai-guardrail's
+         own documented constraint. -->
+    <maven.compiler.release>21</maven.compiler.release>
+
+    <!-- Pinned to the latest 8.9.x version for which core, validation, element-template-generator
+         (annotations + maven-plugin) and connector-runtime-test are ALL published together on
+         Maven Central, verified via repo1.maven.org directory listings on 2026-09-22. No stable
+         8.10.0 release exists yet (only 8.10.0-alphaN as of this date) - that's fine, because
+         governor-connector never compiles against the agentic-ai connector's own classes; the
+         AI Agent Task/Sub-process job types it targets are referenced only as strings/config in
+         BPMN and docs, not as a compile-time dependency. Re-verify this pin once a stable 8.10.0
+         ships, since element-template JSON shape can shift between SDK minor versions. -->
+    <version.connectors>8.9.12</version.connectors>
+
+    <version.jackson>2.22.2</version.jackson>
+    <version.junit-jupiter>6.1.2</version.junit-jupiter>
+    <version.assertj>3.27.4</version.assertj>
+    <version.mockito>5.23.0</version.mockito>
+    <version.testcontainers>1.21.4</version.testcontainers>
+
+    <!-- Pinned to match the version camunda/connectors-bundle:8.9.12 already ships transitively
+         (via camunda-spring-boot-starter) - see governor-connector/pom.xml's micrometer-core
+         comment for why this must stay in lockstep. Re-verify against the actual bundle image if
+         the connectors version pin above ever changes. -->
+    <version.micrometer>1.17.1</version.micrometer>
+
+    <!-- camunda-process-test-java is versioned independently of io.camunda.connector:*; pinned
+         to the latest 8.9.x release available on Maven Central as of 2026-09-22. -->
+    <version.camunda-process-test>8.9.21</version.camunda-process-test>
+
+    <version.maven-compiler-plugin>3.16.0</version.maven-compiler-plugin>
+    <version.maven-surefire-plugin>3.6.0</version.maven-surefire-plugin>
+    <version.maven-failsafe-plugin>3.6.0</version.maven-failsafe-plugin>
+    <version.maven-shade-plugin>3.6.2</version.maven-shade-plugin>
+  </properties>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${version.maven-compiler-plugin}</version>
+          <configuration>
+            <!-- Preserves record component / parameter names in bytecode so Jackson can bind
+                 JSON to records without an extra jackson-module-parameter-names dependency. -->
+            <parameters>true</parameters>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${version.maven-surefire-plugin}</version>
+          <configuration>
+            <!-- Unit tests only; *IT tests run under failsafe (integration-test phase), since
+                 several of them spin up Testcontainers and shouldn't run on every `mvn test`. -->
+            <excludes>
+              <exclude>**/*IT.java</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${version.maven-failsafe-plugin}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <!-- Camunda connector artifacts are mirrored to Maven Central for 8.9.x+, but the template
+       repo additionally declares Camunda's own artifactory for snapshot/pre-release versions. -->
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>connectors</id>
+      <name>Connectors Repository</name>
+      <url>https://artifacts.camunda.com/artifactory/connectors/</url>
+    </repository>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>connectors-snapshots</id>
+      <name>Connectors Snapshot Repository</name>
+      <url>https://artifacts.camunda.com/artifactory/connectors-snapshots/</url>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>connectors</id>
+      <name>Connectors Repository</name>
+      <url>https://artifacts.camunda.com/artifactory/connectors/</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>connectors-snapshots</id>
+      <name>Connectors Snapshot Repository</name>
+      <url>https://artifacts.camunda.com/artifactory/connectors-snapshots/</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+</project>

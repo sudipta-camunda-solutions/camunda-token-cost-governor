@@ -1,0 +1,3 @@
+io\github\camunda\connector\GovernorConnectorTest.class
+io\github\camunda\connector\pricing\PricerTest.class
+io\github\camunda\connector\processtest\GovernorProcessTest.class

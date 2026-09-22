@@ -1,0 +1,35 @@
+# Usage:
+#   1. cp docker/.env.example docker/.env   and fill it in (never commit the real file)
+#   2. mvn package   (from the reactor root - produces the jar Dockerfile.connector COPYs)
+#   3. docker compose -f docker/docker-compose.yml up --build
+#
+# Brings up a single connectors-bundle instance with governor-connector mounted via LOADER_PATH.
+# The connector needs no secrets of its own to run beyond the optional GOVERNOR_PRICE_TABLE
+# cluster secret (configured in Camunda, not here) - it makes no network calls and needs no
+# storage. This does not stand up a self-managed Zeebe broker - see ai-guardrail's own
+# docker-compose.yml comments for that alternative if you're not using Camunda SaaS.
+
+services:
+  connectors-bundle:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.connector
+    env_file:
+      - .env
+    environment:
+      CAMUNDA_CLIENT_MODE: saas
+      CAMUNDA_CLIENT_CLOUD_CLUSTERID: ${CAMUNDA_CLUSTER_ID}
+      CAMUNDA_CLIENT_CLOUD_CLUSTER_ID: ${CAMUNDA_CLUSTER_ID}
+      CAMUNDA_CLIENT_CLOUD_REGION: ${CAMUNDA_CLUSTER_REGION}
+      CAMUNDA_CLIENT_AUTH_CLIENTID: ${CAMUNDA_CLIENT_ID}
+      CAMUNDA_CLIENT_AUTH_CLIENT_ID: ${CAMUNDA_CLIENT_ID}
+      CAMUNDA_CLIENT_AUTH_CLIENTSECRET: ${CAMUNDA_CLIENT_SECRET}
+      CAMUNDA_CLIENT_AUTH_CLIENT_SECRET: ${CAMUNDA_CLIENT_SECRET}
+    ports:
+      - "8080:8080" # health/readiness at /actuator/health, Prometheus metrics at /actuator/prometheus
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health/readiness"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
