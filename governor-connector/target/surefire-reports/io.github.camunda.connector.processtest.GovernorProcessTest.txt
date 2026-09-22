@@ -1,4 +1,20 @@
 -------------------------------------------------------------------------------
 Test set: io.github.camunda.connector.processtest.GovernorProcessTest
 -------------------------------------------------------------------------------
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 45.74 s -- in io.github.camunda.connector.processtest.GovernorProcessTest
+Tests run: 3, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 111.9 s <<< FAILURE! -- in io.github.camunda.connector.processtest.GovernorProcessTest
+io.github.camunda.connector.processtest.GovernorProcessTest.singleIteration_completesViaDone -- Time elapsed: 16.82 s <<< FAILURE!
+java.lang.AssertionError: Process instance [key: 2251799813685318] should have a variable 'totalCostMicros' with value '1250000' but was '0'.
+	at io.camunda.process.test.impl.assertions.util.AwaitilityBehavior.untilAsserted(AwaitilityBehavior.java:66)
+	at io.camunda.process.test.impl.assertions.VariableAssertj.hasVariable(VariableAssertj.java:149)
+	at io.camunda.process.test.impl.assertions.VariableAssertj.hasVariable(VariableAssertj.java:135)
+	at io.camunda.process.test.impl.assertions.ProcessInstanceAssertj.hasVariable(ProcessInstanceAssertj.java:292)
+	at io.github.camunda.connector.processtest.GovernorProcessTest.singleIteration_completesViaDone(GovernorProcessTest.java:101)
+
+io.github.camunda.connector.processtest.GovernorProcessTest.loopsTwiceThenCompletes -- Time elapsed: 14.39 s <<< FAILURE!
+java.lang.AssertionError: Process instance [key: 2251799813685318] should have a variable 'totalCostMicros' with value '2500000' but was '0'.
+	at io.camunda.process.test.impl.assertions.util.AwaitilityBehavior.untilAsserted(AwaitilityBehavior.java:66)
+	at io.camunda.process.test.impl.assertions.VariableAssertj.hasVariable(VariableAssertj.java:149)
+	at io.camunda.process.test.impl.assertions.VariableAssertj.hasVariable(VariableAssertj.java:135)
+	at io.camunda.process.test.impl.assertions.ProcessInstanceAssertj.hasVariable(ProcessInstanceAssertj.java:292)
+	at io.github.camunda.connector.processtest.GovernorProcessTest.loopsTwiceThenCompletes(GovernorProcessTest.java:132)
+

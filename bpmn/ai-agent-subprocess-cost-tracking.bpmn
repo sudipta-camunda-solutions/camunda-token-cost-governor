@@ -21,9 +21,20 @@
     sub-process's own terminal result, which IS BPMN-visible at its completion (same
     agentResult.tokenUsage shape as the Task pattern). One connector call after the sub-process
     reports the whole sub-process's aggregate cost.
+
+    totalCostMicros/totalCostUsd mirror the Task-loop demo's naming (initialized at zero, added to
+    once here) even though there's only one call in this file - so the same variable names work if
+    you extend this into a loop of your own, and so both demo files feed the same flat, top-level,
+    Optimize-reportable variables (see the README's Optimize reporting section).
   -->
   <bpmn:process id="ai-agent-subprocess-cost-tracking" name="AI Agent Sub-process with token/cost tracking" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1" name="Start">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=0" target="totalCostMicros" />
+          <zeebe:output source="=0" target="totalCostUsd" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
       <bpmn:outgoing>Flow_StartToSubprocess</bpmn:outgoing>
     </bpmn:startEvent>
 
@@ -53,6 +64,8 @@
           <zeebe:input source="=agentResult.tokenUsage.outputTokens" target="outputTokens" />
           <zeebe:input source="&quot;{{secrets.GOVERNOR_PRICE_TABLE}}&quot;" target="priceTableSecret" />
           <zeebe:output source="=tokenCostResult" target="tokenCostResult" />
+          <zeebe:output source="=totalCostMicros + tokenCostResult.costMicros" target="totalCostMicros" />
+          <zeebe:output source="=totalCostUsd + tokenCostResult.costUsd" target="totalCostUsd" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
           <zeebe:header key="resultVariable" value="tokenCostResult" />

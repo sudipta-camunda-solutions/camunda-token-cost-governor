@@ -18,6 +18,7 @@ this connector's scope; it reports numbers, not conclusions.
 - [Configuring the connector in Modeler](#configuring-the-connector-in-modeler)
 - [BPMN error codes](#bpmn-error-codes)
 - [Prometheus metrics](#prometheus-metrics)
+- [Reporting in Camunda Optimize](#reporting-in-camunda-optimize)
 - [Docker deployment](#docker-deployment)
 - [Testing](#testing)
 - [Version compatibility](#version-compatibility)
@@ -121,11 +122,13 @@ Result variable defaults to `tokenCostResult`:
 
 See [`bpmn/ai-agent-task-cost-tracking.bpmn`](bpmn/ai-agent-task-cost-tracking.bpmn) for a
 complete, tested example wiring the connector into an explicit AI Agent Task loop with an
-accumulated `totalCostMicros`, and
+accumulated `totalCostMicros`/`totalCostUsd`, and
 [`bpmn/ai-agent-subprocess-cost-tracking.bpmn`](bpmn/ai-agent-subprocess-cost-tracking.bpmn) for
 the AI Agent Sub-process pattern — one connector call after the sub-process's own completion,
 reading its terminal aggregate result (no per-call interception needed, since this connector only
-reports, it doesn't gate).
+reports, it doesn't gate). Both demo files accumulate the same two flat, top-level, numeric
+process variables — see [Reporting in Camunda Optimize](#reporting-in-camunda-optimize) for why
+that shape matters.
 
 ## BPMN error codes
 
@@ -159,6 +162,35 @@ for spend charts/trends across every process instance and model.
 
 `tokenCostResult` is also an ordinary process variable, so Camunda Operate can show it per
 instance, and Optimize can report on it, without any of the above.
+
+## Reporting in Camunda Optimize
+
+Prometheus/Grafana (above) is for real-time, provider/model-level charts. For business-facing
+reports — "what did this process instance cost," "total AI spend this month/year" — Optimize is
+the better tool, and the demo BPMN files' `totalCostMicros`/`totalCostUsd` accumulator variables
+are built specifically to feed it:
+
+| Report | Optimize configuration |
+|---|---|
+| Cost of one process instance | Report type **Process Instance**, grouped by **None** — one row per instance, showing `totalCostUsd`. |
+| Monthly or yearly total spend | Same report type, grouped by **Start Date** with granularity **Month** or **Year**, aggregation **Sum** on `totalCostUsd`. |
+| Average cost per instance, monthly | Same as above with aggregation **Average** instead of **Sum**. |
+
+This works because `totalCostUsd` is a **flat, top-level, numeric** process variable holding its
+final value at process completion — exactly the shape Optimize's variable-based grouping and
+aggregation need. It will *not* work directly on `tokenCostResult` itself, since that's a nested
+object (per-call, not per-instance) — Optimize's variable reporting operates on scalars, not
+nested JSON structures, unless you specifically configure it as an
+[object variable](https://docs.camunda.io/docs/components/optimize/) for field-level drill-down.
+
+Two things worth checking before relying on this:
+
+- `totalCostUsd`/`totalCostMicros` must actually be exported to Optimize's data layer — if your
+  cluster restricts which process variables get indexed for history/Optimize, make sure these two
+  aren't excluded.
+- `totalCostMicros` (integer micro-dollars) is the exact, authoritative figure; `totalCostUsd`
+  (decimal dollars) is a display-only convenience derived from it, purpose-built for a report
+  a business user will actually read — point Optimize at `totalCostUsd`, not `totalCostMicros`.
 
 ## Docker deployment
 

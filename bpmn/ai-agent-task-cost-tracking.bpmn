@@ -1,91 +1,90 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
-                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
-                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
-                   xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
-                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   id="Definitions_AiAgentTaskCostTracking"
-                   targetNamespace="http://bpmn.io/schema/bpmn"
-                   exporter="camunda-token-cost-governor"
-                   exporterVersion="0.2.0">
-
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_AiAgentTaskCostTracking" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Web Modeler" exporterVersion="63e7f30" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
   <bpmn:error id="Error_PriceNotFound" name="Price not found" errorCode="PRICE_NOT_FOUND" />
-
   <!--
-    Each iteration of the AI Agent Task is followed by one Token Cost Reporter call that computes
-    that call's token count and USD cost, and accumulates it into totalCostMicros for the whole
-    process instance.
+    Activity_AiAgentTask is a REAL io.camunda.connectors.agenticai.aiagent.v1 element (not a
+    placeholder), wired to Camunda's provided LLM endpoint (CAMUNDA_PROVIDED_LLM_API_ENDPOINT/
+    _API_KEY secrets) calling anthropic.claude-haiku-4-5. Its result variable is "agent".
 
-    "AI Agent Task" here is a PLACEHOLDER service task (job type under the `demo.*` namespace),
-    standing in for Camunda's real io.camunda.agenticai:aiagent:task:2 element - substitute a real
-    one when adapting this example. Camunda's native AI Agent Task already reports token usage as
-    part of its own result (see README's token-accounting limitations note); this placeholder's
-    `agentResult` output stands in for that same shape (`agentResult.tokenUsage.inputTokens`/
-    `.outputTokens`, `agentResult.model`), which is exactly what Token Cost Reporter reads via
-    FEEL - no interception, no gateway, nothing between the AI Agent Task and the real provider.
+    Token usage only appears in the result at all when "Include assistant message"
+    (data.response.includeAssistantMessage) is true - verified against Camunda's own docs, not
+    assumed. When enabled, the path is agent.responseMessage.metadata.framework.tokenUsage.{
+    inputTokenCount, outputTokenCount} - NOT agent.context.metrics.tokenUsage.{inputTokens,
+    outputTokens}, which this project's own README previously (incorrectly) assumed before this
+    was verified against a real deployment; see the README's corrected token-accounting note.
 
-    The BoundaryEvent_PriceNotFound branch below is one illustrative way to handle an unpriced
-    model (logged and the loop ends) - it is not a required gate. Delete it, or let PRICE_NOT_FOUND
-    surface as an ordinary Zeebe incident instead, if you'd rather handle it differently.
+    Because the real AI Agent Task has no "continueLoop" concept of its own (it runs its own
+    internal tool-call loop up to data.limits.maxModelCalls and completes once), the
+    "iterationCount"/loop-back machinery below is effectively dormant with a single real element
+    wired in: continueLoop is always undefined -> the loop-back condition is always false -> the
+    process always takes the default "done" path after exactly one AI Agent Task call. That's
+    expected, not a bug - it's still exercised end-to-end for a single call, and the loop-back
+    path remains available if you chain multiple AI Agent Task activations of your own.
   -->
-  <bpmn:process id="ai-agent-task-cost-tracking" name="AI Agent Task loop with token/cost tracking" isExecutable="true">
+  <bpmn:process id="ai-agent-task-cost-tracking" name="AI Agent Task with token/cost tracking" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1" name="Start">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
           <zeebe:output source="=0" target="iterationCount" />
           <zeebe:output source="=0" target="totalCostMicros" />
+          <zeebe:output source="=0" target="totalCostUsd" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:outgoing>Flow_StartToAgent</bpmn:outgoing>
     </bpmn:startEvent>
-
-    <bpmn:serviceTask id="Activity_AiAgentTask" name="AI Agent Task (placeholder - see README)">
+    <bpmn:serviceTask id="Activity_AiAgentTask" name="AI Agent Task (placeholder - see README)" zeebe:modelerTemplate="io.camunda.connectors.agenticai.aiagent.v1" zeebe:modelerTemplateVersion="7" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiNBNTZFRkYiLz4KPG1hc2sgaWQ9InBhdGgtMi1vdXRzaWRlLTFfMTg1XzYiIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjQiIHk9IjQiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0iYmxhY2siPgo8cmVjdCBmaWxsPSJ3aGl0ZSIgeD0iNCIgeT0iNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0Ii8+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMjAuMDEwNSAxMi4wOTg3QzE4LjQ5IDEwLjU4OTQgMTcuMTU5NCA4LjEwODE0IDE2LjE3OTkgNi4wMTEwM0MxNi4xNTIgNi4wMDQ1MSAxNi4xMTc2IDYgMTYuMDc5NCA2QzE2LjA0MTEgNiAxNi4wMDY2IDYuMDA0NTEgMTUuOTc4OCA2LjAxMTA0QzE0Ljk5OTQgOC4xMDgxNCAxMy42Njk3IDEwLjU4ODkgMTIuMTQ4MSAxMi4wOTgxQzEwLjYyNjkgMTMuNjA3MSA4LjEyNTY4IDE0LjkyNjQgNi4wMTE1NyAxNS44OTgxQzYuMDA0NzQgMTUuOTI2MSA2IDE1Ljk2MTEgNiAxNkM2IDE2LjAzODcgNi4wMDQ2OCAxNi4wNzM2IDYuMDExNDQgMTYuMTAxNEM4LjEyNTE5IDE3LjA3MjkgMTAuNjI2MiAxOC4zOTE5IDEyLjE0NzcgMTkuOTAxNkMxMy42Njk3IDIxLjQxMDcgMTQuOTk5NiAyMy44OTIgMTUuOTc5MSAyNS45ODlDMTYuMDA2OCAyNS45OTU2IDE2LjA0MTEgMjYgMTYuMDc5MyAyNkMxNi4xMTc1IDI2IDE2LjE1MTkgMjUuOTk1NCAxNi4xNzk2IDI1Ljk4OUMxNy4xNTkxIDIzLjg5MiAxOC40ODg4IDIxLjQxMSAyMC4wMDk5IDE5LjkwMjFNMjAuMDA5OSAxOS45MDIxQzIxLjUyNTMgMTguMzk4NyAyMy45NDY1IDE3LjA2NjkgMjUuOTkxNSAxNi4wODI0QzI1Ljk5NjUgMTYuMDU5MyAyNiAxNi4wMzEgMjYgMTUuOTk5N0MyNiAxNS45Njg0IDI1Ljk5NjUgMTUuOTQwMyAyNS45OTE1IDE1LjkxNzFDMjMuOTQ3NCAxNC45MzI3IDIxLjUyNTkgMTMuNjAxIDIwLjAxMDUgMTIuMDk4NyIvPgo8L21hc2s+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMjAuMDEwNSAxMi4wOTg3QzE4LjQ5IDEwLjU4OTQgMTcuMTU5NCA4LjEwODE0IDE2LjE3OTkgNi4wMTEwM0MxNi4xNTIgNi4wMDQ1MSAxNi4xMTc2IDYgMTYuMDc5NCA2QzE2LjA0MTEgNiAxNi4wMDY2IDYuMDA0NTEgMTUuOTc4OCA2LjAxMTA0QzE0Ljk5OTQgOC4xMDgxNCAxMy42Njk3IDEwLjU4ODkgMTIuMTQ4MSAxMi4wOTgxQzEwLjYyNjkgMTMuNjA3MSA4LjEyNTY4IDE0LjkyNjQgNi4wMTE1NyAxNS44OTgxQzYuMDA0NzQgMTUuOTI2MSA2IDE1Ljk2MTEgNiAxNkM2IDE2LjAzODcgNi4wMDQ2OCAxNi4wNzM2IDYuMDExNDQgMTYuMTAxNEM4LjEyNTE5IDE3LjA3MjkgMTAuNjI2MiAxOC4zOTE5IDEyLjE0NzcgMTkuOTAxNkMxMy42Njk3IDIxLjQxMDcgMTQuOTk5NiAyMy44OTIgMTUuOTc5MSAyNS45ODlDMTYuMDA2OCAyNS45OTU2IDE2LjA0MTEgMjYgMTYuMDc5MyAyNkMxNi4xMTc1IDI2IDE2LjE1MTkgMjUuOTk1NCAxNi4xNzk2IDI1Ljk4OUMxNy4xNTkxIDIzLjg5MiAxOC40ODg4IDIxLjQxMSAyMC4wMDk5IDE5LjkwMjFNMjAuMDA5OSAxOS45MDIxQzIxLjUyNTMgMTguMzk4NyAyMy45NDY1IDE3LjA2NjkgMjUuOTkxNSAxNi4wODI0QzI1Ljk5NjUgMTYuMDU5MyAyNiAxNi4wMzEgMjYgMTUuOTk5N0MyNiAxNS45Njg0IDI1Ljk5NjUgMTUuOTQwMyAyNS45OTE1IDE1LjkxNzFDMjMuOTQ3NCAxNC45MzI3IDIxLjUyNTkgMTMuNjAxIDIwLjAxMDUgMTIuMDk4NyIgZmlsbD0id2hpdGUiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0yMC4wMTA1IDEyLjA5ODdDMTguNDkgMTAuNTg5NCAxNy4xNTk0IDguMTA4MTQgMTYuMTc5OSA2LjAxMTAzQzE2LjE1MiA2LjAwNDUxIDE2LjExNzYgNiAxNi4wNzk0IDZDMTYuMDQxMSA2IDE2LjAwNjYgNi4wMDQ1MSAxNS45Nzg4IDYuMDExMDRDMTQuOTk5NCA4LjEwODE0IDEzLjY2OTcgMTAuNTg4OSAxMi4xNDgxIDEyLjA5ODFDMTAuNjI2OSAxMy42MDcxIDguMTI1NjggMTQuOTI2NCA2LjAxMTU3IDE1Ljg5ODFDNi4wMDQ3NCAxNS45MjYxIDYgMTUuOTYxMSA2IDE2QzYgMTYuMDM4NyA2LjAwNDY4IDE2LjA3MzYgNi4wMTE0NCAxNi4xMDE0QzguMTI1MTkgMTcuMDcyOSAxMC42MjYyIDE4LjM5MTkgMTIuMTQ3NyAxOS45MDE2QzEzLjY2OTcgMjEuNDEwNyAxNC45OTk2IDIzLjg5MiAxNS45NzkxIDI1Ljk4OUMxNi4wMDY4IDI1Ljk5NTYgMTYuMDQxMSAyNiAxNi4wNzkzIDI2QzE2LjExNzUgMjYgMTYuMTUxOSAyNS45OTU0IDE2LjE3OTYgMjUuOTg5QzE3LjE1OTEgMjMuODkyIDE4LjQ4ODggMjEuNDExIDIwLjAwOTkgMTkuOTAyMU0yMC4wMDk5IDE5LjkwMjFDMjEuNTI1MyAxOC4zOTg3IDIzLjk0NjUgMTcuMDY2OSAyNS45OTE1IDE2LjA4MjRDMjUuOTk2NSAxNi4wNTkzIDI2IDE2LjAzMSAyNiAxNS45OTk3QzI2IDE1Ljk2ODQgMjUuOTk2NSAxNS45NDAzIDI1Ljk5MTUgMTUuOTE3MUMyMy45NDc0IDE0LjkzMjcgMjEuNTI1OSAxMy42MDEgMjAuMDEwNSAxMi4wOTg3IiBzdHJva2U9IiM0OTFEOEIiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgbWFzaz0idXJsKCNwYXRoLTItb3V0c2lkZS0xXzE4NV82KSIvPgo8L3N2Zz4K">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="demo.aiagent:task:1" retries="1" />
+        <zeebe:taskDefinition type="io.camunda.agenticai:aiagent:1" retries="1" />
         <zeebe:ioMapping>
-          <!-- Once any explicit zeebe:output mapping is present on a task, Zeebe stops
-               auto-propagating every job-returned variable to process scope and only merges
-               explicitly mapped ones - so continueLoop/agentResult must be listed here too, or
-               downstream expressions never see them (verified this the hard way via a failing
-               process test before adding this mapping). -->
-          <zeebe:output source="=iterationCount + 1" target="iterationCount" />
-          <zeebe:output source="=continueLoop" target="continueLoop" />
-          <zeebe:output source="=agentResult" target="agentResult" />
+          <zeebe:input source="openaiCompatible" target="provider.type" />
+          <zeebe:input source="{{secrets.CAMUNDA_PROVIDED_LLM_API_ENDPOINT}}" target="provider.openaiCompatible.endpoint" />
+          <zeebe:input source="{{secrets.CAMUNDA_PROVIDED_LLM_API_KEY}}" target="provider.openaiCompatible.authentication.apiKey" />
+          <zeebe:input source="anthropic.claude-haiku-4-5" target="provider.openaiCompatible.model.model" />
+          <zeebe:input source="=&#34;You are **TaskAgent**, a helpful, generic chat agent that can handle a wide variety of customer requests using your own domain knowledge **and** any tools explicitly provided to you at runtime.&#10;&#10;If tools are provided, you should prefer them instead of guessing an answer. You can call the same tool multiple times by providing different input values. Don&#39;t guess any tools which were not explicitly configured. If no tool matches the request, try to generate an answer. If you&#39;re not able to find a good answer, return with a message stating why you&#39;re not able to.&#10;&#10;Wrap minimal, inspectable reasoning in *exactly* this XML template:&#10;&#10;&#60;thinking&#62;&#10;&#60;context&#62;…briefly state the customer’s need and current state…&#60;/context&#62;&#10;&#60;reflection&#62;…list candidate tools, justify which you will call next and why…&#60;/reflection&#62;&#10;&#60;/thinking&#62;&#10;&#10;Reveal **no** additional private reasoning outside these tags.&#34;" target="data.systemPrompt.prompt" />
+          <zeebe:input target="data.userPrompt.prompt" />
+          <zeebe:input source="=agent.context" target="data.context" />
+          <zeebe:input source="in-process" target="data.memory.storage.type" />
+          <zeebe:input source="=20" target="data.memory.contextWindowSize" />
+          <zeebe:input source="=10" target="data.limits.maxModelCalls" />
+          <zeebe:input source="text" target="data.response.format.type" />
+          <zeebe:input source="=false" target="data.response.format.parseJson" />
+          <zeebe:input source="=true" target="data.response.includeAssistantMessage" />
         </zeebe:ioMapping>
+        <zeebe:taskHeaders>
+          <zeebe:header key="elementTemplateVersion" value="7" />
+          <zeebe:header key="elementTemplateId" value="io.camunda.connectors.agenticai.aiagent.v1" />
+          <zeebe:header key="resultVariable" value="agent" />
+          <zeebe:header key="retryBackoff" value="PT0S" />
+        </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_StartToAgent</bpmn:incoming>
       <bpmn:incoming>Flow_LoopBackToAgent</bpmn:incoming>
       <bpmn:outgoing>Flow_AgentToTokenCost</bpmn:outgoing>
     </bpmn:serviceTask>
-
-    <bpmn:serviceTask id="Activity_TokenCost" name="Token cost">
+    <bpmn:serviceTask id="Activity_TokenCost" name="Token cost" zeebe:modelerTemplate="io.github.camunda.TokenCostGovernor.v2" zeebe:modelerTemplateVersion="4" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIj4KICA8cGF0aCBkPSJNMTYgMiBMMjggNyBWMTUgQzI4IDIyLjUgMjIuOCAyNy44IDE2IDMwIEM5LjIgMjcuOCA0IDIyLjUgNCAxNSBWNyBaIgogICAgICAgIGZpbGw9IiMwZjc2NmUiIHN0cm9rZT0iIzEzNGU0YSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgPHBhdGggZD0iTTE2IDIgTDI4IDcgVjE1IEMyOCAyMi41IDIyLjggMjcuOCAxNiAzMCBaIiBmaWxsPSIjMTRiOGE2IiBvcGFjaXR5PSIwLjM1Ii8+CiAgPHRleHQgeD0iMTYiIHk9IjIxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIEhlbHZldGljYSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmZmZmYiPiQ8L3RleHQ+Cjwvc3ZnPgo=">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="io.github.camunda:token-cost-governor:1" retries="1" />
         <zeebe:ioMapping>
-          <zeebe:input source="&quot;anthropic&quot;" target="provider" />
-          <zeebe:input source="=agentResult.model" target="model" />
-          <zeebe:input source="=agentResult.tokenUsage.inputTokens" target="inputTokens" />
-          <zeebe:input source="=agentResult.tokenUsage.outputTokens" target="outputTokens" />
-          <zeebe:input source="&quot;{{secrets.GOVERNOR_PRICE_TABLE}}&quot;" target="priceTableSecret" />
-          <zeebe:output source="=tokenCostResult" target="tokenCostResult" />
-          <zeebe:output source="=totalCostMicros + tokenCostResult.costMicros" target="totalCostMicros" />
+          <zeebe:input source="{{secrets.GOVERNOR_PRICE_TABLE}}" target="priceTableSecret" />
+          <zeebe:input source="&#34;anthropic&#34;" target="provider" />
+          <zeebe:input source="&#34;claude-haiku-4-5&#34;" target="model" />
+          <zeebe:input source="=agent.responseMessage.metadata.framework.tokenUsage.inputTokenCount" target="inputTokens" />
+          <zeebe:input source="=agent.responseMessage.metadata.framework.tokenUsage.outputTokenCount" target="outputTokens" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
-          <zeebe:header key="resultVariable" value="tokenCostResult" />
-          <zeebe:header key="elementTemplateId" value="io.github.camunda.TokenCostGovernor.v2" />
           <zeebe:header key="elementTemplateVersion" value="2" />
+          <zeebe:header key="elementTemplateId" value="io.github.camunda.TokenCostGovernor.v2" />
+          <zeebe:header key="resultVariable" value="tokenCostResult" />
+          <zeebe:header key="retryBackoff" value="PT0S" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_AgentToTokenCost</bpmn:incoming>
       <bpmn:outgoing>Flow_TokenCostToGateway</bpmn:outgoing>
     </bpmn:serviceTask>
-
     <bpmn:boundaryEvent id="BoundaryEvent_PriceNotFound" name="PRICE_NOT_FOUND" attachedToRef="Activity_TokenCost">
       <bpmn:outgoing>Flow_BoundaryToLog</bpmn:outgoing>
       <bpmn:errorEventDefinition id="ErrorEventDefinition_1" errorRef="Error_PriceNotFound" />
     </bpmn:boundaryEvent>
-
     <bpmn:serviceTask id="Activity_LogUnknownModelPrice" name="Log unknown model price">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="demo.log:unknown-model-price:1" retries="1" />
@@ -93,33 +92,27 @@
       <bpmn:incoming>Flow_BoundaryToLog</bpmn:incoming>
       <bpmn:outgoing>Flow_LogToEnd</bpmn:outgoing>
     </bpmn:serviceTask>
-
     <bpmn:exclusiveGateway id="Gateway_Continue" name="Continue looping?" default="Flow_ToDone">
       <bpmn:incoming>Flow_TokenCostToGateway</bpmn:incoming>
       <bpmn:outgoing>Flow_LoopBackToAgent</bpmn:outgoing>
       <bpmn:outgoing>Flow_ToDone</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-
     <bpmn:sequenceFlow id="Flow_LoopBackToAgent" name="agent wants another round" sourceRef="Gateway_Continue" targetRef="Activity_AiAgentTask">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=continueLoop = true and iterationCount &lt; 3</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_ToDone" name="done" sourceRef="Gateway_Continue" targetRef="EndEvent_Done" />
-
     <bpmn:endEvent id="EndEvent_Done" name="Done">
       <bpmn:incoming>Flow_ToDone</bpmn:incoming>
     </bpmn:endEvent>
-
     <bpmn:endEvent id="EndEvent_UnknownModelPrice" name="Unknown model price">
       <bpmn:incoming>Flow_LogToEnd</bpmn:incoming>
     </bpmn:endEvent>
-
     <bpmn:sequenceFlow id="Flow_StartToAgent" sourceRef="StartEvent_1" targetRef="Activity_AiAgentTask" />
     <bpmn:sequenceFlow id="Flow_AgentToTokenCost" sourceRef="Activity_AiAgentTask" targetRef="Activity_TokenCost" />
     <bpmn:sequenceFlow id="Flow_TokenCostToGateway" sourceRef="Activity_TokenCost" targetRef="Gateway_Continue" />
     <bpmn:sequenceFlow id="Flow_BoundaryToLog" sourceRef="BoundaryEvent_PriceNotFound" targetRef="Activity_LogUnknownModelPrice" />
     <bpmn:sequenceFlow id="Flow_LogToEnd" sourceRef="Activity_LogUnknownModelPrice" targetRef="EndEvent_UnknownModelPrice" />
   </bpmn:process>
-
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="ai-agent-task-cost-tracking">
       <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
@@ -131,22 +124,31 @@
       <bpmndi:BPMNShape id="Activity_TokenCost_di" bpmnElement="Activity_TokenCost">
         <dc:Bounds x="440" y="200" width="100" height="80" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_LogUnknownModelPrice_di" bpmnElement="Activity_LogUnknownModelPrice">
+        <dc:Bounds x="440" y="360" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_Continue_di" bpmnElement="Gateway_Continue" isMarkerVisible="true">
         <dc:Bounds x="595" y="215" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_Done_di" bpmnElement="EndEvent_Done">
         <dc:Bounds x="702" y="222" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BoundaryEvent_PriceNotFound_di" bpmnElement="BoundaryEvent_PriceNotFound">
-        <dc:Bounds x="472" y="262" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_LogUnknownModelPrice_di" bpmnElement="Activity_LogUnknownModelPrice">
-        <dc:Bounds x="440" y="360" width="100" height="80" />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_UnknownModelPrice_di" bpmnElement="EndEvent_UnknownModelPrice">
         <dc:Bounds x="602" y="382" width="36" height="36" />
       </bpmndi:BPMNShape>
-
+      <bpmndi:BPMNShape id="BoundaryEvent_PriceNotFound_di" bpmnElement="BoundaryEvent_PriceNotFound">
+        <dc:Bounds x="472" y="262" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_LoopBackToAgent_di" bpmnElement="Flow_LoopBackToAgent">
+        <di:waypoint x="620" y="215" />
+        <di:waypoint x="620" y="120" />
+        <di:waypoint x="330" y="120" />
+        <di:waypoint x="330" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToDone_di" bpmnElement="Flow_ToDone">
+        <di:waypoint x="645" y="240" />
+        <di:waypoint x="702" y="240" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_StartToAgent_di" bpmnElement="Flow_StartToAgent">
         <di:waypoint x="188" y="240" />
         <di:waypoint x="280" y="240" />
@@ -158,16 +160,6 @@
       <bpmndi:BPMNEdge id="Flow_TokenCostToGateway_di" bpmnElement="Flow_TokenCostToGateway">
         <di:waypoint x="540" y="240" />
         <di:waypoint x="595" y="240" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_ToDone_di" bpmnElement="Flow_ToDone">
-        <di:waypoint x="645" y="240" />
-        <di:waypoint x="702" y="240" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_LoopBackToAgent_di" bpmnElement="Flow_LoopBackToAgent">
-        <di:waypoint x="620" y="215" />
-        <di:waypoint x="620" y="120" />
-        <di:waypoint x="330" y="120" />
-        <di:waypoint x="330" y="200" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_BoundaryToLog_di" bpmnElement="Flow_BoundaryToLog">
         <di:waypoint x="490" y="298" />
