@@ -1,0 +1,2 @@
+# Real credentials for the local Docker deployment - never commit
+docker/.env
