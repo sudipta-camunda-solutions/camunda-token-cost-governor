@@ -4,20 +4,20 @@
     "name" : "GovernorProcessTest",
     "coverages" : [ {
       "processDefinitionId" : "ai-agent-task-cost-tracking",
-      "completedElements" : [ "StartEvent_1", "Activity_AiAgentTask", "Activity_TokenCost", "BoundaryEvent_PriceNotFound", "Activity_LogUnknownModelPrice", "EndEvent_UnknownModelPrice", "Gateway_Continue", "EndEvent_Done" ],
-      "takenSequenceFlows" : [ "Flow_AgentToTokenCost", "Flow_BoundaryToLog", "Flow_LogToEnd", "Flow_StartToAgent", "Flow_ToDone", "Flow_TokenCostToGateway", "Flow_LoopBackToAgent" ],
+      "completedElements" : [ "StartEvent_1", "Activity_AiAgentTask", "Activity_TokenCost", "BoundaryEvent_PriceNotFound", "Activity_LogUnknownModelPrice", "EndEvent_UnknownModelPrice", "EndEvent_Done" ],
+      "takenSequenceFlows" : [ "Flow_AgentToTokenCost", "Flow_BoundaryToLog", "Flow_LogToEnd", "Flow_StartToAgent", "Flow_TokenCostToDone" ],
       "coverage" : 1.0
     } ]
   } ],
   "models" : [ {
     "processDefinitionId" : "ai-agent-task-cost-tracking",
-    "totalElementCount" : 15,
+    "totalElementCount" : 12,
     "version" : "1"
   } ],
   "coverages" : [ {
     "processDefinitionId" : "ai-agent-task-cost-tracking",
-    "completedElements" : [ "StartEvent_1", "Activity_AiAgentTask", "Activity_TokenCost", "BoundaryEvent_PriceNotFound", "Activity_LogUnknownModelPrice", "EndEvent_UnknownModelPrice", "Gateway_Continue", "EndEvent_Done" ],
-    "takenSequenceFlows" : [ "Flow_AgentToTokenCost", "Flow_BoundaryToLog", "Flow_LogToEnd", "Flow_StartToAgent", "Flow_ToDone", "Flow_TokenCostToGateway", "Flow_LoopBackToAgent" ],
+    "completedElements" : [ "StartEvent_1", "Activity_AiAgentTask", "Activity_TokenCost", "BoundaryEvent_PriceNotFound", "Activity_LogUnknownModelPrice", "EndEvent_UnknownModelPrice", "EndEvent_Done" ],
+    "takenSequenceFlows" : [ "Flow_AgentToTokenCost", "Flow_BoundaryToLog", "Flow_LogToEnd", "Flow_StartToAgent", "Flow_TokenCostToDone" ],
     "coverage" : 1.0
   } ]
 }

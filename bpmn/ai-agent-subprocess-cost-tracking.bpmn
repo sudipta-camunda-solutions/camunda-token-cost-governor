@@ -60,6 +60,7 @@
         <zeebe:ioMapping>
           <zeebe:input source="&quot;anthropic&quot;" target="provider" />
           <zeebe:input source="=agentResult.model" target="model" />
+          <zeebe:input source="&quot;research-agent&quot;" target="agent" />
           <zeebe:input source="=agentResult.tokenUsage.inputTokens" target="inputTokens" />
           <zeebe:input source="=agentResult.tokenUsage.outputTokens" target="outputTokens" />
           <zeebe:input source="&quot;{{secrets.GOVERNOR_PRICE_TABLE}}&quot;" target="priceTableSecret" />
@@ -70,7 +71,7 @@
         <zeebe:taskHeaders>
           <zeebe:header key="resultVariable" value="tokenCostResult" />
           <zeebe:header key="elementTemplateId" value="io.github.camunda.TokenCostGovernor.v2" />
-          <zeebe:header key="elementTemplateVersion" value="2" />
+          <zeebe:header key="elementTemplateVersion" value="3" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_SubprocessToTokenCost</bpmn:incoming>

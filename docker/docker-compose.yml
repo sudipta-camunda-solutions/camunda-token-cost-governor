@@ -4,10 +4,14 @@
 #   3. docker compose -f docker/docker-compose.yml up --build
 #
 # Brings up a single connectors-bundle instance with governor-connector mounted via LOADER_PATH.
-# The connector needs no secrets of its own to run beyond the optional GOVERNOR_PRICE_TABLE
-# cluster secret (configured in Camunda, not here) - it makes no network calls and needs no
-# storage. This does not stand up a self-managed Zeebe broker - see ai-guardrail's own
-# docker-compose.yml comments for that alternative if you're not using Camunda SaaS.
+# The runtime connects OUT to your Camunda SaaS cluster and polls for jobs - SaaS never calls in.
+#
+# GOVERNOR_PRICE_TABLE is a Camunda cluster secret (set in Console). A runtime you host yourself
+# only fetches Console cluster secrets when CAMUNDA_CONNECTOR_SECRETPROVIDER_CONSOLE_ENABLED is
+# true (set below) AND the API client in .env was created with the "Secrets" scope. If you'd
+# rather not use Console secrets, remove that setting and pass GOVERNOR_PRICE_TABLE as a plain
+# environment variable instead (see DEPLOYMENT-GUIDE.docx). This does not stand up a
+# self-managed Zeebe broker - it targets Camunda SaaS.
 
 services:
   connectors-bundle:
@@ -25,6 +29,7 @@ services:
       CAMUNDA_CLIENT_AUTH_CLIENT_ID: ${CAMUNDA_CLIENT_ID}
       CAMUNDA_CLIENT_AUTH_CLIENTSECRET: ${CAMUNDA_CLIENT_SECRET}
       CAMUNDA_CLIENT_AUTH_CLIENT_SECRET: ${CAMUNDA_CLIENT_SECRET}
+      CAMUNDA_CONNECTOR_SECRETPROVIDER_CONSOLE_ENABLED: "true"
     ports:
       - "8080:8080" # health/readiness at /actuator/health, Prometheus metrics at /actuator/prometheus
     healthcheck:

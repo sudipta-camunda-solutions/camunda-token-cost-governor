@@ -10,7 +10,6 @@ import io.camunda.process.test.api.CamundaProcessTest;
 import io.camunda.process.test.api.CamundaProcessTestContext;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -26,19 +25,20 @@ import org.junit.jupiter.api.Test;
  *
  * <p>The connector's own job type ({@code io.github.camunda:token-cost-governor:1}) is mocked
  * too, since there's only one operation now - the mock always completes with a canned {@code
- * tokenCostResult}. This class verifies BPMN orchestration (the loop-back gateway, the
- * accumulated cost, the optional PRICE_NOT_FOUND boundary event); the connector's own local
- * computation is already covered by {@code GovernorConnectorTest}.
+ * tokenCostResult}. This class verifies BPMN orchestration (the accumulated cost, the optional
+ * PRICE_NOT_FOUND boundary event); the connector's own local computation is already covered by
+ * {@code GovernorConnectorTest}.
  *
- * <p>{@code iterationCount} is deliberately NOT asserted at 1/2 the way it once was: the real AI
- * Agent Task element has no explicit {@code zeebe:output} of its own (unlike the old placeholder),
- * so nothing increments it - it stays at its StartEvent-initialized {@code 0} for the life of the
- * process. That's real, expected behavior with a real single-shot AI Agent Task wired in (see the
- * BPMN file's own top comment), not a test bug - {@link #singleIteration_completesViaDone}
- * asserts on this explicitly so it's a documented fact, not a silent gap. {@link
- * #loopsTwiceThenCompletes} still proves the loop-back sequence flow itself remains wired
- * correctly (by having the mock supply {@code continueLoop} directly, something a real AI Agent
- * Task never does on its own) and that cost correctly accumulates across iterations either way.
+ * <p>The process is a single straight-line pass (Start -&gt; AI Agent Task -&gt; Token cost -&gt;
+ * Done), not a loop - an earlier version of both this file and the BPMN had a "continue looping?"
+ * gateway looping back to the AI Agent Task, but a real AI Agent Task has no {@code continueLoop}
+ * concept of its own (it runs its own internal tool-call loop internally and completes once), so
+ * that loop-back could never actually fire, and Modeler's own linter flags a task with multiple
+ * incoming sequence flows and no explicit join as an error regardless - see the BPMN file's own
+ * top comment for the full story. There is accordingly no {@code iterationCount} variable and no
+ * multi-iteration test here anymore; {@code totalCostMicros}/{@code totalCostUsd} still exist and
+ * are still asserted on, since a real AI Agent Task/Token Cost Reporter pair only ever needs one
+ * pass through this file to prove the wiring is correct end to end.
  */
 @CamundaProcessTest
 class GovernorProcessTest {
@@ -84,11 +84,9 @@ class GovernorProcessTest {
   }
 
   @Test
-  void singleIteration_completesViaDone() {
+  void singlePass_completesViaDone() {
     client.newDeployResourceCommand().addResourceFromClasspath("bpmn/ai-agent-task-cost-tracking.bpmn").send().join();
     processTestContext.mockJobWorker(GOVERNOR_JOB_TYPE).withHandler(this::completeGovernorJob);
-    // No "continueLoop" here - a real AI Agent Task never sends one; the process reaches
-    // EndEvent_Done via the gateway's default flow, exactly as it would in production.
     processTestContext.mockJobWorker(AGENT_JOB_TYPE).thenComplete(Map.of("agent", agentResponse()));
 
     ProcessInstanceEvent instance =
@@ -96,41 +94,9 @@ class GovernorProcessTest {
 
     assertThat(instance)
         .isCompleted()
-        .hasCompletedElements("EndEvent_Done")
-        .hasVariable("iterationCount", 0L)
+        .hasCompletedElements("Activity_AiAgentTask", "Activity_TokenCost", "EndEvent_Done")
         .hasVariable("totalCostMicros", COST_MICROS_PER_CALL)
         .hasVariable("totalCostUsd", 1.25);
-  }
-
-  @Test
-  void loopsTwiceThenCompletes() {
-    client.newDeployResourceCommand().addResourceFromClasspath("bpmn/ai-agent-task-cost-tracking.bpmn").send().join();
-    processTestContext.mockJobWorker(GOVERNOR_JOB_TYPE).withHandler(this::completeGovernorJob);
-
-    // continueLoop is injected by this mock, not by the real AI Agent Task (which has no such
-    // field) - this proves the loop-back sequence flow/gateway still work structurally, and that
-    // cost keeps accumulating correctly across iterations, for whoever wires their own signal
-    // into continueLoop (e.g. chaining multiple AI Agent Task activations).
-    AtomicInteger agentCallCount = new AtomicInteger(0);
-    processTestContext
-        .mockJobWorker(AGENT_JOB_TYPE)
-        .withHandler(
-            (jobClient, job) -> {
-              boolean continueLoop = agentCallCount.incrementAndGet() < 2;
-              Map<String, Object> variables = new HashMap<>();
-              variables.put("continueLoop", continueLoop);
-              variables.put("agent", agentResponse());
-              jobClient.newCompleteCommand(job).variables(variables).send().join();
-            });
-
-    ProcessInstanceEvent instance =
-        client.newCreateInstanceCommand().bpmnProcessId("ai-agent-task-cost-tracking").latestVersion().send().join();
-
-    assertThat(instance)
-        .isCompleted()
-        .hasCompletedElements("EndEvent_Done")
-        .hasVariable("totalCostMicros", COST_MICROS_PER_CALL * 2)
-        .hasVariable("totalCostUsd", 2.5);
   }
 
   @Test

@@ -7,34 +7,26 @@
       "processDefinitionId" : "ai-agent-task-cost-tracking",
       "completedElements" : [ "StartEvent_1", "Activity_AiAgentTask", "Activity_TokenCost", "BoundaryEvent_PriceNotFound", "Activity_LogUnknownModelPrice", "EndEvent_UnknownModelPrice" ],
       "takenSequenceFlows" : [ "Flow_AgentToTokenCost", "Flow_BoundaryToLog", "Flow_LogToEnd", "Flow_StartToAgent" ],
-      "coverage" : 0.6666666666666666
+      "coverage" : 0.8333333333333334
     } ]
   }, {
-    "name" : "singleIteration_completesViaDone()",
+    "name" : "singlePass_completesViaDone()",
     "coverages" : [ {
       "processDefinitionId" : "ai-agent-task-cost-tracking",
-      "completedElements" : [ "StartEvent_1", "Activity_AiAgentTask", "Activity_TokenCost", "Gateway_Continue", "EndEvent_Done" ],
-      "takenSequenceFlows" : [ "Flow_AgentToTokenCost", "Flow_StartToAgent", "Flow_ToDone", "Flow_TokenCostToGateway" ],
-      "coverage" : 0.6
-    } ]
-  }, {
-    "name" : "loopsTwiceThenCompletes()",
-    "coverages" : [ {
-      "processDefinitionId" : "ai-agent-task-cost-tracking",
-      "completedElements" : [ "StartEvent_1", "Activity_AiAgentTask", "Activity_TokenCost", "Gateway_Continue", "EndEvent_Done" ],
-      "takenSequenceFlows" : [ "Flow_AgentToTokenCost", "Flow_LoopBackToAgent", "Flow_StartToAgent", "Flow_ToDone", "Flow_TokenCostToGateway" ],
-      "coverage" : 0.6666666666666666
+      "completedElements" : [ "StartEvent_1", "Activity_AiAgentTask", "Activity_TokenCost", "EndEvent_Done" ],
+      "takenSequenceFlows" : [ "Flow_AgentToTokenCost", "Flow_StartToAgent", "Flow_TokenCostToDone" ],
+      "coverage" : 0.5833333333333334
     } ]
   } ],
   "models" : [ {
     "processDefinitionId" : "ai-agent-task-cost-tracking",
-    "totalElementCount" : 15,
+    "totalElementCount" : 12,
     "version" : "1"
   } ],
   "coverages" : [ {
     "processDefinitionId" : "ai-agent-task-cost-tracking",
-    "completedElements" : [ "StartEvent_1", "Activity_AiAgentTask", "Activity_TokenCost", "BoundaryEvent_PriceNotFound", "Activity_LogUnknownModelPrice", "EndEvent_UnknownModelPrice", "Gateway_Continue", "EndEvent_Done" ],
-    "takenSequenceFlows" : [ "Flow_AgentToTokenCost", "Flow_BoundaryToLog", "Flow_LogToEnd", "Flow_StartToAgent", "Flow_ToDone", "Flow_TokenCostToGateway", "Flow_LoopBackToAgent" ],
+    "completedElements" : [ "StartEvent_1", "Activity_AiAgentTask", "Activity_TokenCost", "BoundaryEvent_PriceNotFound", "Activity_LogUnknownModelPrice", "EndEvent_UnknownModelPrice", "EndEvent_Done" ],
+    "takenSequenceFlows" : [ "Flow_AgentToTokenCost", "Flow_BoundaryToLog", "Flow_LogToEnd", "Flow_StartToAgent", "Flow_TokenCostToDone" ],
     "coverage" : 1.0
   } ]
 }

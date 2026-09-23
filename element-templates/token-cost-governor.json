@@ -7,7 +7,7 @@
     "keywords" : [ ]
   },
   "documentationRef" : "https://docs.camunda.io/docs/components/connectors/custom-built-connectors/connector-sdk/",
-  "version" : 2,
+  "version" : 3,
   "category" : {
     "id" : "connectors",
     "name" : "Connectors"
@@ -22,6 +22,9 @@
   }, {
     "id" : "usage",
     "label" : "Token usage"
+  }, {
+    "id" : "agent",
+    "label" : "Agent (optional)"
   }, {
     "id" : "connector",
     "label" : "Connector"
@@ -113,10 +116,22 @@
     },
     "type" : "Number"
   }, {
+    "id" : "agent",
+    "label" : "Agent name",
+    "description" : "e.g. \"claims-triage\". Keep to a small, stable set of names - it becomes a Prometheus label, so never bind it to something per-instance or per-customer. Blank = processId:elementId.",
+    "optional" : true,
+    "feel" : "optional",
+    "group" : "agent",
+    "binding" : {
+      "name" : "agent",
+      "type" : "zeebe:input"
+    },
+    "type" : "String"
+  }, {
     "id" : "version",
     "label" : "Version",
     "description" : "Version of the element template",
-    "value" : "2",
+    "value" : "3",
     "group" : "connector",
     "binding" : {
       "key" : "elementTemplateVersion",

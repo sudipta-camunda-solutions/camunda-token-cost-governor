@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: io.github.camunda.connector.GovernorConnectorTest
 -------------------------------------------------------------------------------
-Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.841 s -- in io.github.camunda.connector.GovernorConnectorTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 12.67 s -- in io.github.camunda.connector.GovernorConnectorTest

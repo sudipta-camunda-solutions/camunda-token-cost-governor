@@ -18,6 +18,10 @@ import jakarta.validation.constraints.PositiveOrZero;
  * @param model e.g. {@code =agentModel}
  * @param inputTokens e.g. {@code =agentResult.tokenUsage.inputTokens}
  * @param outputTokens e.g. {@code =agentResult.tokenUsage.outputTokens}
+ * @param agent optional label identifying which agent this call belongs to, so token count and
+ *     cost can be broken down per agent. Low-cardinality by design (it is used as a Prometheus
+ *     label): a handful of stable names, never a per-instance or per-customer value. Blank falls
+ *     back to {@code bpmnProcessId:elementId} from the job context.
  * @param priceTableSecret not user-configurable in Modeler at all (a {@code Hidden} template
  *     property) - always resolved from the {@code GOVERNOR_PRICE_TABLE} cluster secret, a JSON
  *     array of price rows maintained centrally for every developer using this connector. The
@@ -40,6 +44,13 @@ public record TokenCostRequest(
     @NotNull @PositiveOrZero
         @TemplateProperty(group = "usage", label = "Output tokens", type = PropertyType.Number, feel = FeelMode.optional, description = "e.g. =agentResult.tokenUsage.outputTokens")
         Long outputTokens,
+    @TemplateProperty(
+            group = "agent",
+            label = "Agent name",
+            optional = true,
+            feel = FeelMode.optional,
+            description = "e.g. \"claims-triage\". Keep to a small, stable set of names - it becomes a Prometheus label, so never bind it to something per-instance or per-customer. Blank = processId:elementId.")
+        String agent,
     @TemplateProperty(
             label = "Price table",
             type = PropertyType.Hidden,

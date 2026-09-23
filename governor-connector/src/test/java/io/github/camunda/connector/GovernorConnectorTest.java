@@ -2,16 +2,21 @@ package io.github.camunda.connector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.camunda.connector.api.error.ConnectorException;
+import io.camunda.connector.api.outbound.JobContext;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
 import io.camunda.connector.runtime.test.outbound.OutboundConnectorContextBuilder;
 import io.github.camunda.connector.error.TokenCostErrorCodes;
 import io.github.camunda.connector.metrics.TokenCostMetrics;
 import io.github.camunda.connector.model.PriceSource;
+import io.github.camunda.connector.model.TokenCostRequest;
 import io.github.camunda.connector.model.TokenCostResult;
 import io.github.camunda.connector.pricing.PriceTable;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -126,5 +131,45 @@ class GovernorConnectorTest {
     assertThat(meterRegistry.get("governor_tokens_input_total").counter().count()).isEqualTo(1000.0);
     assertThat(meterRegistry.get("governor_tokens_output_total").counter().count()).isEqualTo(1000.0);
     assertThat(meterRegistry.get("governor_cost_usd_total").counter().count()).isEqualTo(0.018);
+  }
+
+  @Test
+  void explicitAgentName_appearsInResultAndAsMetricTag() {
+    Map<String, Object> vars = new HashMap<>(baseVariables(PRICE_TABLE_JSON));
+    vars.put("agent", "  claims-triage ");
+
+    TokenCostResult result = (TokenCostResult) connector.execute(contextWith(vars));
+
+    assertThat(result.agent()).isEqualTo("claims-triage");
+    assertThat(meterRegistry.get("governor_cost_usd_total").tag("agent", "claims-triage").counter().count())
+        .isEqualTo(0.018);
+    assertThat(meterRegistry.get("governor_calls_total").tag("agent", "claims-triage").counter().count())
+        .isEqualTo(1.0);
+  }
+
+  @Test
+  void blankAgent_fallsBackToProcessIdAndElementIdFromJobContext() {
+    JobContext job = mock(JobContext.class);
+    when(job.getBpmnProcessId()).thenReturn("claims-process");
+    when(job.getElementId()).thenReturn("Activity_TokenCost");
+    OutboundConnectorContext context = mock(OutboundConnectorContext.class);
+    when(context.getJobContext()).thenReturn(job);
+    when(context.bindVariables(TokenCostRequest.class))
+        .thenReturn(new TokenCostRequest("anthropic", "claude-sonnet-5", 1000L, 1000L, "  ", PRICE_TABLE_JSON));
+
+    TokenCostResult result = (TokenCostResult) connector.execute(context);
+
+    assertThat(result.agent()).isEqualTo("claims-process:Activity_TokenCost");
+    assertThat(meterRegistry.get("governor_calls_total").tag("agent", "claims-process:Activity_TokenCost").counter().count())
+        .isEqualTo(1.0);
+  }
+
+  @Test
+  void blankAgent_withNoJobContextIds_isUnspecifiedNeverNull() {
+    // The SDK's test context carries no process/element ids, so this exercises the last fallback.
+    TokenCostResult result = (TokenCostResult) connector.execute(contextWith(baseVariables(PRICE_TABLE_JSON)));
+
+    assertThat(result.agent()).isEqualTo("unspecified");
+    assertThat(meterRegistry.get("governor_calls_total").tag("agent", "unspecified").counter().count()).isEqualTo(1.0);
   }
 }

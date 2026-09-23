@@ -2,6 +2,7 @@ package io.github.camunda.connector;
 
 import io.camunda.connector.api.annotation.OutboundConnector;
 import io.camunda.connector.api.error.ConnectorException;
+import io.camunda.connector.api.outbound.JobContext;
 import io.camunda.connector.api.outbound.OutboundConnectorContext;
 import io.camunda.connector.api.outbound.OutboundConnectorFunction;
 import io.camunda.connector.generator.java.annotation.ElementTemplate;
@@ -31,7 +32,7 @@ import java.util.Optional;
 @ElementTemplate(
     id = "io.github.camunda.TokenCostGovernor.v2",
     name = "Token Cost Reporter",
-    version = 2,
+    version = 3,
     description = "Computes the token count and USD cost of one LLM call.",
     icon = "icon.svg",
     documentationRef = "https://docs.camunda.io/docs/components/connectors/custom-built-connectors/connector-sdk/",
@@ -39,7 +40,8 @@ import java.util.Optional;
     defaultResultVariable = "tokenCostResult",
     propertyGroups = {
       @ElementTemplate.PropertyGroup(id = "model", label = "Model"),
-      @ElementTemplate.PropertyGroup(id = "usage", label = "Token usage")
+      @ElementTemplate.PropertyGroup(id = "usage", label = "Token usage"),
+      @ElementTemplate.PropertyGroup(id = "agent", label = "Agent (optional)")
     })
 public class GovernorConnector implements OutboundConnectorFunction {
 
@@ -91,6 +93,7 @@ public class GovernorConnector implements OutboundConnectorFunction {
         new TokenCostResult(
             request.provider(),
             request.model(),
+            resolveAgent(request.agent(), context),
             request.inputTokens(),
             request.outputTokens(),
             request.inputTokens() + request.outputTokens(),
@@ -101,5 +104,17 @@ public class GovernorConnector implements OutboundConnectorFunction {
 
     metrics.record(result);
     return result;
+  }
+
+  /** Never null - Prometheus needs the same tag keys on every sample of a meter. */
+  private static String resolveAgent(String agent, OutboundConnectorContext context) {
+    if (agent != null && !agent.isBlank()) {
+      return agent.trim();
+    }
+    JobContext job = context.getJobContext();
+    if (job != null && job.getBpmnProcessId() != null && job.getElementId() != null) {
+      return job.getBpmnProcessId() + ":" + job.getElementId();
+    }
+    return "unspecified";
   }
 }

@@ -6,7 +6,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 
 /**
- * Records aggregate token/cost counters on a {@link MeterRegistry}, tagged by provider/model, so
+ * Records aggregate token/cost counters on a {@link MeterRegistry}, tagged by provider/model/agent, so
  * spend is chartable (Prometheus + Grafana) without a database. Recorded via Micrometer's
  * <b>static</b> global registry rather than dependency injection: this connector is discovered by
  * the Camunda connector runtime via the JDK {@code ServiceLoader} (SPI), which runs entirely
@@ -34,21 +34,25 @@ public final class TokenCostMetrics {
     Counter.builder("governor_calls_total")
         .tag("provider", result.provider())
         .tag("model", result.model())
+        .tag("agent", result.agent())
         .register(registry)
         .increment();
     Counter.builder("governor_tokens_input_total")
         .tag("provider", result.provider())
         .tag("model", result.model())
+        .tag("agent", result.agent())
         .register(registry)
         .increment(result.inputTokens());
     Counter.builder("governor_tokens_output_total")
         .tag("provider", result.provider())
         .tag("model", result.model())
+        .tag("agent", result.agent())
         .register(registry)
         .increment(result.outputTokens());
     Counter.builder("governor_cost_usd_total")
         .tag("provider", result.provider())
         .tag("model", result.model())
+        .tag("agent", result.agent())
         .register(registry)
         .increment(result.costUsd());
   }
