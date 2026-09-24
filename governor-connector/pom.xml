@@ -104,6 +104,16 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <!-- Test-only SLF4J provider, so GovernorConnectorLoggingTest can attach a ListAppender and
+           assert what the connector logs (and, importantly, that it never logs the price-table
+           secret's text). The runtime provides its own SLF4J/Logback in production; slf4j-api is
+           "provided" above and nothing here is shaded into the connector jar. -->
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.5.18</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <!-- Provides OutboundConnectorContextBuilder for SDK-level operation tests. -->
       <groupId>io.camunda.connector</groupId>
       <artifactId>connector-runtime-test</artifactId>

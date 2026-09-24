@@ -10,6 +10,14 @@
       "coverage" : 0.8333333333333334
     } ]
   }, {
+    "name" : "subProcess_bigContextAndSmallContextAgents_eachCallIsPricedAndAccumulated()",
+    "coverages" : [ {
+      "processDefinitionId" : "ai-agent-subprocess-cost-tracking",
+      "completedElements" : [ "StartEvent_1", "Activity_1kyv3gj", "Tool_GetDateTime1", "Activity_0vkhe3f", "Activity_0alays1", "Activity_1vgqpep", "EndEvent_Done" ],
+      "takenSequenceFlows" : [ "Flow_0qo53nk", "Flow_1b1kcy9", "Flow_1lv0ach", "Flow_1nm1ft4", "Flow_1px4rdd" ],
+      "coverage" : 0.9230769230769231
+    } ]
+  }, {
     "name" : "singlePass_completesViaDone()",
     "coverages" : [ {
       "processDefinitionId" : "ai-agent-task-cost-tracking",
@@ -22,11 +30,20 @@
     "processDefinitionId" : "ai-agent-task-cost-tracking",
     "totalElementCount" : 12,
     "version" : "1"
+  }, {
+    "processDefinitionId" : "ai-agent-subprocess-cost-tracking",
+    "totalElementCount" : 13,
+    "version" : "1"
   } ],
   "coverages" : [ {
     "processDefinitionId" : "ai-agent-task-cost-tracking",
     "completedElements" : [ "StartEvent_1", "Activity_AiAgentTask", "Activity_TokenCost", "BoundaryEvent_PriceNotFound", "Activity_LogUnknownModelPrice", "EndEvent_UnknownModelPrice", "EndEvent_Done" ],
     "takenSequenceFlows" : [ "Flow_AgentToTokenCost", "Flow_BoundaryToLog", "Flow_LogToEnd", "Flow_StartToAgent", "Flow_TokenCostToDone" ],
     "coverage" : 1.0
+  }, {
+    "processDefinitionId" : "ai-agent-subprocess-cost-tracking",
+    "completedElements" : [ "StartEvent_1", "Activity_1kyv3gj", "Tool_GetDateTime1", "Activity_0vkhe3f", "Activity_0alays1", "Activity_1vgqpep", "EndEvent_Done" ],
+    "takenSequenceFlows" : [ "Flow_0qo53nk", "Flow_1b1kcy9", "Flow_1lv0ach", "Flow_1nm1ft4", "Flow_1px4rdd" ],
+    "coverage" : 0.9230769230769231
   } ]
 }

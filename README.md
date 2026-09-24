@@ -23,6 +23,7 @@ this connector's scope; it reports numbers, not conclusions.
 - [BPMN error codes](#bpmn-error-codes)
 - [Prometheus metrics](#prometheus-metrics)
 - [Reporting in Camunda Optimize](#reporting-in-camunda-optimize)
+- [Logging](#logging)
 - [Docker deployment](#docker-deployment)
 - [Testing](#testing)
 - [Version compatibility](#version-compatibility)
@@ -36,7 +37,7 @@ connector reads whatever input/output token counts the process already has — m
 FEEL from that result — looks up a price for the model, and returns the computed cost:
 
 ```
-AI Agent Task/Sub-process  ──►  process variable (agentResult.tokenUsage...)  ──►  Token Cost Reporter  ──►  tokenCostResult
+AI Agent Task  ──►  process variable agent.context.metrics.tokenUsage.*  ──►  Token Cost Reporter  ──►  tokenCostResult
 ```
 
 No interception layer, no reverse proxy, no gateway sitting between the AI Agent element and the
@@ -106,9 +107,9 @@ One operation, four required fields plus one optional (`element-templates/token-
 |---|---|---|
 | Provider | Model | `=agentProvider`, or a literal like `anthropic` |
 | Model | Model | `=agentModel` |
-| Input tokens | Token usage | `=agent.responseMessage.metadata.framework.tokenUsage.inputTokenCount` |
-| Output tokens | Token usage | `=agent.responseMessage.metadata.framework.tokenUsage.outputTokenCount` |
-| Agent name (optional) | Agent | A literal like `"claims-triage"` — see below |
+| Input tokens | Token usage | `=agent.context.metrics.tokenUsage.inputTokenCount` |
+| Output tokens | Token usage | `=agent.context.metrics.tokenUsage.outputTokenCount` |
+| Agent name (optional) | Agent | A literal like `claims-triage` — see below (the underlying input is called `agentName`) |
 
 **Agent name** identifies which agent a call belongs to, so token count and cost can be broken
 down per agent (chargeback/showback by agent role). Leave it blank and it defaults to
@@ -117,16 +118,26 @@ is used as a Prometheus label, so keep it to a **small, stable set of names** �
 something per-instance or per-customer (e.g. `=customerId`), or every distinct value becomes a
 permanent new time series and Prometheus's storage grows without bound.
 
-The Agent name field arrived in template version 3. Existing elements built from version 2 need
+The Agent name field arrived in template version 3 and its input was renamed `agent` → `agentName`
+in version 5 (see the note below on why). Existing elements built from an older version need
 the template updated/re-applied in Modeler to show it — and re-applying regenerates the task's
-input/output mapping, which deletes the demo BPMN's hand-added `totalCostMicros`/`totalCostUsd`
+input/output mapping, which deletes the demo BPMN's hand-added `business_totalCostMicros`/`business_totalCostUsd`
 accumulator outputs (see that file's top comment), so re-add those afterward.
 
-The exact FEEL path above is Camunda's real AI Agent Task result shape (`agent` being whatever
-you named the result variable), verified against Camunda's own docs — **and it only exists at
-all when the AI Agent element's "Include assistant message" option is enabled.** Leave that
-option off and `inputTokens`/`outputTokens` will be null, failing this connector's own
-validation. This is exactly what [`bpmn/ai-agent-task-cost-tracking.bpmn`](bpmn/ai-agent-task-cost-tracking.bpmn)
+The FEEL paths above are the real AI Agent Task result shape (`agent` being whatever you named the
+result variable), read from a real process instance on a live cluster (AI Agent element template
+v7): token usage sits at `agent.context.metrics.tokenUsage`, next to `modelCalls`. It does **not**
+need "Include assistant message". Earlier versions of this README documented
+`agent.responseMessage.metadata.framework.tokenUsage` — that path is not present on this result, and
+using it makes `inputTokens`/`outputTokens` resolve to null, failing validation with
+`inputTokens: must not be null`. If your AI Agent template version exposes usage somewhere else,
+check the `agent` variable in Operate and adjust the two paths.
+
+**Don't name any other input `agent`.** The AI Agent Task's default result variable is `agent`, and
+Zeebe applies input mappings in order, each visible to the next — an input called `agent` shadows the
+result variable, so the token paths that follow it resolve to null. That is why the connector's field
+is `agentName`, and it applies equally if you rename your own variables. This is exactly what
+[`bpmn/ai-agent-task-cost-tracking.bpmn`](bpmn/ai-agent-task-cost-tracking.bpmn)
 wires up against a real AI Agent Task element (not a placeholder) — see its own top comment for
 the full detail, including an operational gotcha around re-applying this connector's element
 template in Modeler.
@@ -148,12 +159,17 @@ Result variable defaults to `tokenCostResult`:
 
 `bpmn/ai-agent-task-cost-tracking.bpmn` wires a **real** AI Agent Task element end to end
 (tested against a real Testcontainers-backed Zeebe engine, with the AI Agent Task's job mocked
-rather than calling a real LLM). `bpmn/ai-agent-subprocess-cost-tracking.bpmn` still uses a
-**placeholder** AI Agent Sub-process element (illustrative field names, not verified against a
-real deployment) demonstrating the pattern — one connector call after the sub-process's own
-completion, reading its terminal aggregate result (no per-call interception needed, since this
-connector only reports, it doesn't gate). Both demo files accumulate the same two flat, top-level,
-numeric process variables — see [Reporting in Camunda Optimize](#reporting-in-camunda-optimize)
+rather than calling a real LLM). `bpmn/ai-agent-subprocess-cost-tracking.bpmn` uses two **real** AI
+Agent Sub-process elements (ad-hoc sub-processes) that behave differently on purpose: **Research Analyst (big
+context)** has a long prompt and brief, a context window of 100 and makes several model calls, so it uses many
+tokens; **Quick Answer (small context)** has a one-line prompt, a window of 4 and one model call. Each is followed by
+its own Token cost task (agent names `research-analyst` and `quick-answer`). It is tested the same way (both job types
+mocked, the token counts are fixtures: 12,850/940 against 96/42; the test also runs the ad-hoc loop and checks what
+each call receives). Its token usage
+is at `agent.context.metrics.tokenUsage`, which only exists because the sub-processes set **Include agent
+context**; each contains a tool script task because Zeebe refuses an ad-hoc sub-process with no activity. Neither
+demo has been run against a live cluster. Both demo files accumulate the same flat, top-level
+process variables — see [Reporting in Camunda Optimize](#reporting-in-camunda-optimize)
 for why that shape matters.
 
 ## BPMN error codes
@@ -195,38 +211,88 @@ instance, and Optimize can report on it, without any of the above.
 
 ## Reporting in Camunda Optimize
 
-Prometheus/Grafana (above) is for real-time, provider/model-level charts. For business-facing
-reports — "what did this process instance cost," "total AI spend this month/year" — Optimize is
-the better tool, and the demo BPMN files' `totalCostMicros`/`totalCostUsd` accumulator variables
-are built specifically to feed it:
+Prometheus/Grafana (above) is for real-time charts and for cost over time. For business-facing reports
+— "what did this instance cost," "how much this month" — Optimize is the better tool, fed by the demo BPMN
+files' `business_totalCostMicros`, `business_totalCostUsd` and `business_costAgent` variables. The Word manual
+(Section 9) has the full walkthrough; this is the short version.
 
-| Report | Optimize configuration |
-|---|---|
-| Cost of one process instance | Report type **Process Instance**, grouped by **None** — one row per instance, showing `totalCostUsd`. |
-| Monthly or yearly total spend | Same report type, grouped by **Start Date** with granularity **Month** or **Year**, aggregation **Sum** on `totalCostUsd`. |
-| Average cost per instance, monthly | Same as above with aggregation **Average** instead of **Sum**. |
+**Two things decide whether Optimize can see the cost at all**
 
-This works because `totalCostUsd` is a **flat, top-level, numeric** process variable holding its
-final value at process completion — exactly the shape Optimize's variable-based grouping and
-aggregation need. It will *not* work directly on `tokenCostResult` itself, since that's a nested
-object (per-call, not per-instance) — Optimize's variable reporting operates on scalars, not
-nested JSON structures, unless you specifically configure it as an
-[object variable](https://docs.camunda.io/docs/components/optimize/) for field-level drill-down.
+1. **The variable names must start with `business_`.** New Camunda 8.10 SaaS clusters export only
+   `business_`-prefixed variables to Optimize (8.10 release notes); everything else is permanently excluded and
+   never back-filled. Symptom: the **Variable** option in the report builder is blocked ("Not seeing a process or
+   variable?"). The alternative is to change the variable filter in the cluster's settings in Console. Only
+   instances started afterwards carry the variables.
+2. **The Token cost task keeps these output mappings** (re-applying the element template in Web Modeler removes
+   them, so re-add them): `tokenCostResult` = `=tokenCostResult`; `business_totalCostMicros` =
+   `=business_totalCostMicros + tokenCostResult.costMicros`; `business_totalCostUsd` =
+   `=business_totalCostUsd + tokenCostResult.costUsd`; `business_costAgent` = `=tokenCostResult.agent`. The Start
+   event sets the two totals to 0. `business_costAgent` is a plain string because Optimize does not flatten object
+   variables such as `tokenCostResult` on SaaS.
 
-**Per-agent reporting:** Prometheus (above) is the right tool for a real per-agent breakdown.
-`totalCostUsd` is a single per-instance total, so in Optimize it only separates agents cleanly when
-each process has one agent — in that case the process definition already *is* the agent, and
-Optimize reports per process definition natively. A process that runs several different agents
-would mix their costs in `totalCostUsd`; use Prometheus for those.
+**What Optimize can and cannot do.** Its Variable view returns one number (sum, average, minimum or maximum of a
+numeric variable over the filtered instances); its Group by can only be None, per Optimize's own list of valid
+report combinations. So there is no bar chart of cost per month or per agent in Optimize — use Grafana on
+`governor_cost_usd_total` for that. Optimize does well at totals and averages for a slice (this month, this year,
+one agent) and a per-instance table that exports to CSV.
 
-Two things worth checking before relying on this:
+**Import the ready-made dashboard.** [`optimize/ai-cost-dashboard.json`](optimize/ai-cost-dashboard.json) holds five
+reports and a dashboard, `AI cost`:
 
-- `totalCostUsd`/`totalCostMicros` must actually be exported to Optimize's data layer — if your
-  cluster restricts which process variables get indexed for history/Optimize, make sure these two
-  aren't excluded.
-- `totalCostMicros` (integer micro-dollars) is the exact, authoritative figure; `totalCostUsd`
-  (decimal dollars) is a display-only convenience derived from it, purpose-built for a report
-  a business user will actually read — point Optimize at `totalCostUsd`, not `totalCostMicros`.
+| # | Report | Shows |
+|---|---|---|
+| 1 | Cost of each process instance | Raw data table of completed instances: ID, start, end, `business_totalCostUsd`, `business_totalCostMicros`, `business_costAgent` |
+| 2 | Agent-wise cost (USD) | Number, sum of `business_totalCostUsd`; add an agent filter to the dashboard once data exists to select one agent |
+| 3 | Total spend this month (USD) | Number, sum, instances started this calendar month |
+| 4 | Total spend this year (USD) | Number, sum, instances started this calendar year |
+| 5 | Average cost per case (USD) | Number, average; the human-flow target is off until you set it |
+
+1. In Optimize create a collection (`AI cost`) and add both demo processes (`ai-agent-task-cost-tracking` and
+   `ai-agent-subprocess-cost-tracking`) as data sources, all versions. The first process in the file needs at least
+   one instance in Optimize, and every process in the file must be a data source of the collection.
+2. Open the collection, **Create New** → **Import JSON**, pick the file. Camunda's documentation says only Optimize
+   superusers can import and export.
+3. Open the dashboard. To compare with a human-handled case, open Report 5, switch on the progress bar in its
+   configuration and set the target to your cost per human-handled case.
+4. The file has no agent filter: Optimize only accepts a dashboard variable filter for a variable that already exists in
+   its data. After the first instance with `business_costAgent` arrives, open the dashboard, **Edit**, add a **Variable**
+   filter on `business_costAgent`, and save.
+5. If the import is refused, the message names the cause. "Requires definitions that don't exist" means no definition
+   matched: the file uses tenant `<default>` (where Optimize stores every Camunda 8 definition) and the process key
+   `ai-agent-task-cost-tracking`, so the process must have at least one instance imported into Optimize and its BPMN
+   process ID must equal that key (otherwise change the key and name in the file). Other causes: a schema version mismatch (the file uses reports 11 and dashboard 8, the values of
+   8.10.0-alpha5; read `sourceIndexVersion` from an export of your own Optimize), or permissions. The same file can
+   be posted to `/api/public/import?collectionId=<id>` on `https://<region>.optimize.camunda.io/<cluster-id>`.
+
+**Which processes it covers.** Every report in the file lists both demo processes as data sources, so the numbers add
+up over both, and the table shows the process ID per row. For your own processes run
+`python optimize/generate-dashboard.py --process my-agent-process` (repeat `--process` for several; `--process
+ID="Display name"`, `--versions latest`, `-o file` are also available), or add a process to an already-imported report
+in the report builder (**Add** next to the data source). Optimize has no "all processes" data source, and a process
+instance cannot be a data source: a report reads all instances of the listed processes, and you narrow it with
+filters (state, dates, `business_costAgent`). Importing the same file twice creates a second copy.
+
+The file was built from Optimize's own source at 8.10.0-alpha5. It has not yet been imported into a live Optimize,
+and no cost data exists yet on the test cluster.
+
+## Logging
+
+The connector logs under `io.github.camunda.connector` and never logs the price-table secret's text
+(only its state — blank, unresolved placeholder, or a character count — and row counts).
+
+- **INFO** (default): one startup line, and one trace line per call:
+  `Token cost: provider=anthropic model=claude-haiku-4-5 agent=task-agent inputTokens=100 outputTokens=50 totalTokens=150 costMicros=350 costUsd=0.000350 priceSource=DEFAULT_TABLE elapsedMs=3`
+- **DEBUG**: also the inputs received, whether the price-table secret was blank/unresolved/parsed,
+  which table matched and the rates used, and the counters recorded.
+- **WARN**: a `GOVERNOR_PRICE_TABLE` that isn't valid JSON (previously a silent fall-back to the
+  default table), a model with no price (with both tables' row counts), and a Micrometer registry
+  that isn't bound (so `governor_*` would never reach `/actuator/prometheus`).
+- **ERROR**: any unexpected failure, including a Console secret that can't be read.
+
+Set the level with `GOVERNOR_LOG_LEVEL=DEBUG` in `docker/.env`, or the environment variable
+`LOGGING_LEVEL_IO_GITHUB_CAMUNDA_CONNECTOR`. It can also be switched live, without a restart:
+`curl -X POST -H "Content-Type: application/json" -d '{"configuredLevel":"DEBUG"}' http://localhost:8080/actuator/loggers/io.github.camunda.connector`.
+See `DEPLOYMENT-GUIDE.docx`, Section 12.4, for reading the lines.
 
 ## Docker deployment
 
@@ -245,8 +311,17 @@ The connector needs no secrets of its own beyond the `GOVERNOR_PRICE_TABLE` clus
 runtime you host yourself only sees Console cluster secrets if `docker/docker-compose.yml`'s
 `CAMUNDA_CONNECTOR_SECRETPROVIDER_CONSOLE_ENABLED` is `true` (it is) **and** the API client in
 `.env` was created with the **Secrets** scope, in addition to the scope that lets it read and
-complete jobs. This comes from Camunda's hybrid-mode documentation; the runtime accepted the
-setting in testing, but resolving real Console secrets was not observed against a live cluster.
+complete jobs. This comes from Camunda's hybrid-mode documentation and was confirmed on a real
+cluster: with a client lacking the Secrets scope, the runtime's token request for audience
+`secrets.camunda.io` is refused with HTTP 401 and the job fails (the connector's ERROR log then
+carries a `HINT:` line saying so). Resolving a secret with a correctly scoped client has not been
+observed yet.
+
+If the runtime logs `Failed with code 404` when fetching a process definition (health shows
+`processDefinitionImport` DOWN), your cluster serves its REST API at a different address than the
+runtime's built-in default — observed on a cluster reporting 8.10.0-alpha5, where
+`https://<region>.api.camunda.io/<cluster-id>` worked and the default `.zeebe.camunda.io` address
+returned 404. Set `CAMUNDA_CLIENT_REST_ADDRESS` in `docker/.env` (see `docker/.env.example`).
 
 For step-by-step instructions for every platform — local without Docker, Docker Desktop,
 Kubernetes, AWS (ECS Fargate, EKS) and Azure (Container Apps, AKS) — see `DEPLOYMENT-GUIDE.docx`.
@@ -291,12 +366,11 @@ template rather than trusting any job type string written down here.
   this project ran its own reverse-proxy that read token counts straight from the real provider
   response, sidestepping this gap; without that proxy, this connector is now fully dependent on
   whatever the AI Agent Task's own result reports, with nothing to cross-check it against.
-- **Token usage only exists in the AI Agent Task's result when "Include assistant message" is
-  enabled**, at `<resultVariable>.responseMessage.metadata.framework.tokenUsage.{inputTokenCount,
-  outputTokenCount}` — verified against a real deployment, not assumed. Leave that option off (its
-  purpose is normally just deciding whether to also carry the assistant's full response text/
-  content blocks into your process variables) and this connector's `inputTokens`/`outputTokens`
-  inputs resolve to null, failing validation before any cost is computed.
+- **Token usage location depends on the AI Agent element's template version.** On the version this
+  project was verified against (v7, openaiCompatible provider) it is at
+  `<resultVariable>.context.metrics.tokenUsage.{inputTokenCount, outputTokenCount}`. Other template
+  versions or providers may report it elsewhere, and a wrong path shows up as `inputTokens: must not
+  be null` on the Token cost job — look at the `agent` variable in Operate to find the real path.
 - **The bundled default price table is illustrative, not verified against live provider pricing.**
   It exists for a zero-config quick start with a handful of well-known models — see
   [`governor-connector/src/main/resources/default-price-table.json`](governor-connector/src/main/resources/default-price-table.json).

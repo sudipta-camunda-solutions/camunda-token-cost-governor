@@ -1,4 +1,4 @@
-classpath:C:\BitBucket\Workspace\Camunda8\camunda-token-cost-governor\governor-connector\target\classes	10:c64b4154ccd5745abf21fdba58967e7db0faaec02d6c803b751acc3b68dec77d
+classpath:C:\BitBucket\Workspace\Camunda8\camunda-token-cost-governor\governor-connector\target\classes	10:d249a00d43e2b2baef5cb4d75aee7bc44de9e8ca98c3fbea2ddd3455298ac6e7
 classpath:C:\Users\newsa\.m2\repository\io\camunda\connector\connector-core\8.9.12\connector-core-8.9.12.jar	68876:1790017503781
 classpath:C:\Users\newsa\.m2\repository\io\camunda\connector\connector-validation\8.9.12\connector-validation-8.9.12.jar	5484:1790076164616
 classpath:C:\Users\newsa\.m2\repository\jakarta\validation\jakarta.validation-api\3.1.1\jakarta.validation-api-3.1.1.jar	106136:1778352282958
@@ -34,6 +34,8 @@ classpath:C:\Users\newsa\.m2\repository\org\mockito\mockito-core\5.23.0\mockito-
 classpath:C:\Users\newsa\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.7\byte-buddy-agent-1.17.7.jar	366248:1774961322227
 classpath:C:\Users\newsa\.m2\repository\org\objenesis\objenesis\3.3\objenesis-3.3.jar	49423:1772605428326
 classpath:C:\Users\newsa\.m2\repository\org\mockito\mockito-junit-jupiter\5.23.0\mockito-junit-jupiter-5.23.0.jar	9427:1790004500738
+classpath:C:\Users\newsa\.m2\repository\ch\qos\logback\logback-classic\1.5.18\logback-classic-1.5.18.jar	306760:1774955903680
+classpath:C:\Users\newsa\.m2\repository\ch\qos\logback\logback-core\1.5.18\logback-core-1.5.18.jar	627250:1774955903947
 classpath:C:\Users\newsa\.m2\repository\io\camunda\connector\connector-runtime-test\8.9.12\connector-runtime-test-8.9.12.jar	27882:1790076183644
 classpath:C:\Users\newsa\.m2\repository\io\camunda\connector\connector-test\8.9.12\connector-test-8.9.12.jar	8276:1790076184109
 classpath:C:\Users\newsa\.m2\repository\io\camunda\connector\connector-runtime-core\8.9.12\connector-runtime-core-8.9.12.jar	198404:1790076184321

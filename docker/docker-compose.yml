@@ -30,6 +30,23 @@ services:
       CAMUNDA_CLIENT_AUTH_CLIENTSECRET: ${CAMUNDA_CLIENT_SECRET}
       CAMUNDA_CLIENT_AUTH_CLIENT_SECRET: ${CAMUNDA_CLIENT_SECRET}
       CAMUNDA_CONNECTOR_SECRETPROVIDER_CONSOLE_ENABLED: "true"
+      # This runtime bundles Camunda's own connectors, including the AI Agent, and would compete
+      # with the SaaS-hosted runtime for those jobs. It cannot resolve the SaaS-only
+      # CAMUNDA_PROVIDED_LLM_* secrets, so an AI Agent job it wins fails with "Must be an HTTP or
+      # HTTPS URL" and leaves an incident. Leave the agentic-AI jobs (AI Agent, ad-hoc tools
+      # schema, MCP) to the SaaS runtime; this one only needs to serve the Token Cost Reporter.
+      CAMUNDA_CONNECTOR_AGENTICAI_ENABLED: "false"
+      # The runtime's built-in SaaS REST address is https://<region>.zeebe.camunda.io/<cluster-id>.
+      # Newer clusters (for example 8.10 alphas) serve the REST API at
+      # https://<region>.api.camunda.io/<cluster-id> instead, and the default then returns 404
+      # (job streaming still works, but fetching process definitions fails and jobs error out).
+      # Override it from .env with CAMUNDA_CLIENT_REST_ADDRESS when that happens.
+      CAMUNDA_CLIENT_RESTADDRESS: ${CAMUNDA_CLIENT_REST_ADDRESS:-https://${CAMUNDA_CLUSTER_REGION}.zeebe.camunda.io:443/${CAMUNDA_CLUSTER_ID}}
+      # Log level for this connector's own log lines (io.github.camunda.connector.*): INFO (default)
+      # gives one summary line per call; DEBUG adds the inputs, the price-table decision and the
+      # rates used. Set GOVERNOR_LOG_LEVEL in .env. It can also be changed live without a restart:
+      # POST /actuator/loggers/io.github.camunda.connector {"configuredLevel":"DEBUG"}
+      LOGGING_LEVEL_IO_GITHUB_CAMUNDA_CONNECTOR: ${GOVERNOR_LOG_LEVEL:-INFO}
     ports:
       - "8080:8080" # health/readiness at /actuator/health, Prometheus metrics at /actuator/prometheus
     healthcheck:

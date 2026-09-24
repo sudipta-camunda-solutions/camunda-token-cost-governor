@@ -1,15 +1,21 @@
 package io.github.camunda.connector.pricing;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A provider:model -&gt; price lookup, built from a plain JSON array of rows (see {@link Row}).
@@ -22,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class PriceTable {
 
+  private static final Logger LOG = LoggerFactory.getLogger(PriceTable.class);
   private static final String DEFAULT_TABLE_RESOURCE = "/default-price-table.json";
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -41,7 +48,9 @@ public final class PriceTable {
       if (in == null) {
         throw new IllegalStateException("Bundled default price table resource not found: " + DEFAULT_TABLE_RESOURCE);
       }
-      return parse(in.readAllBytes());
+      PriceTable table = parse(in.readAllBytes());
+      LOG.debug("Loaded bundled default price table: {} rows", table.size());
+      return table;
     } catch (IOException e) {
       throw new IllegalStateException("Failed to load bundled default price table", e);
     }
@@ -54,16 +63,36 @@ public final class PriceTable {
    * genuinely blank value) is treated as "not configured," letting the caller fall back to the
    * bundled default table. A malformed value that isn't blank and isn't an unresolved placeholder
    * is a real configuration error and is returned as empty too, since this method has no BPMN
-   * error context of its own to throw through - callers that want to distinguish "not configured"
-   * from "misconfigured" should log accordingly.
+   * error context of its own to throw through - it logs a WARN (never the secret's text) so
+   * "misconfigured" is distinguishable from "not configured", which only logs at DEBUG.
    */
   public static Optional<PriceTable> parseSecret(String secretValue) {
-    if (secretValue == null || secretValue.isBlank() || secretValue.contains("{{secrets.")) {
+    if (secretValue == null) {
+      LOG.debug("GOVERNOR_PRICE_TABLE not provided (null) - using the bundled default table");
+      return Optional.empty();
+    }
+    if (secretValue.isBlank()) {
+      LOG.debug("GOVERNOR_PRICE_TABLE is blank - using the bundled default table");
+      return Optional.empty();
+    }
+    if (secretValue.contains("{{secrets.")) {
+      LOG.debug("GOVERNOR_PRICE_TABLE is still an unresolved {{secrets.*}} placeholder - using the bundled default table");
       return Optional.empty();
     }
     try {
-      return Optional.of(parse(secretValue.getBytes(StandardCharsets.UTF_8)));
+      PriceTable table = parse(secretValue.getBytes(StandardCharsets.UTF_8));
+      LOG.debug("Parsed GOVERNOR_PRICE_TABLE: {} rows", table.size());
+      return Optional.of(table);
     } catch (IOException e) {
+      // Deliberately never log the secret's text or Jackson's source snippet - only the parser's
+      // own message (getOriginalMessage excludes the location/source excerpt).
+      String reason = e instanceof JsonProcessingException j ? j.getOriginalMessage() : e.getMessage();
+      LOG.warn(
+          "GOVERNOR_PRICE_TABLE could not be parsed as a JSON array of price rows ({} chars, {}: {}) - "
+              + "falling back to the bundled default table",
+          secretValue.length(),
+          e.getClass().getSimpleName(),
+          reason);
       return Optional.empty();
     }
   }
@@ -76,6 +105,15 @@ public final class PriceTable {
       byKey.put(entry.key(), entry);
     }
     return new PriceTable(byKey);
+  }
+
+  public int size() {
+    return entriesByKey.size();
+  }
+
+  /** Sorted lower-cased {@code provider:model} keys - for diagnostics only. */
+  public Set<String> keys() {
+    return Collections.unmodifiableSet(new TreeSet<>(entriesByKey.keySet()));
   }
 
   public Optional<PriceEntry> lookup(String provider, String model) {

@@ -136,7 +136,7 @@ class GovernorConnectorTest {
   @Test
   void explicitAgentName_appearsInResultAndAsMetricTag() {
     Map<String, Object> vars = new HashMap<>(baseVariables(PRICE_TABLE_JSON));
-    vars.put("agent", "  claims-triage ");
+    vars.put("agentName", "  claims-triage ");
 
     TokenCostResult result = (TokenCostResult) connector.execute(contextWith(vars));
 

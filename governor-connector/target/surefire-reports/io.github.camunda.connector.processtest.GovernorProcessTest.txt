@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: io.github.camunda.connector.processtest.GovernorProcessTest
 -------------------------------------------------------------------------------
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 53.91 s -- in io.github.camunda.connector.processtest.GovernorProcessTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 36.79 s -- in io.github.camunda.connector.processtest.GovernorProcessTest

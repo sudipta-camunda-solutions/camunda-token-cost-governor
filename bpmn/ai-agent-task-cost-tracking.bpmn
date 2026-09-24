@@ -6,12 +6,16 @@
     placeholder), wired to Camunda's provided LLM endpoint (CAMUNDA_PROVIDED_LLM_API_ENDPOINT/
     _API_KEY secrets) calling anthropic.claude-haiku-4-5. Its result variable is "agent".
 
-    Token usage only appears in the result at all when "Include assistant message"
-    (data.response.includeAssistantMessage) is true - verified against Camunda's own docs, not
-    assumed. When enabled, the path is agent.responseMessage.metadata.framework.tokenUsage.{
-    inputTokenCount, outputTokenCount} - NOT agent.context.metrics.tokenUsage.{inputTokens,
-    outputTokens}, which this project's own README previously (incorrectly) assumed before this
-    was verified against a real deployment; see the README's corrected token-accounting note.
+    Token usage is at agent.context.metrics.tokenUsage.{inputTokenCount, outputTokenCount}
+    (plus agent.context.metrics.modelCalls) - read from a real process instance on a live
+    cluster (AI Agent element template v7, openaiCompatible provider); it does NOT need "Include
+    assistant message". An earlier version of this file, the README and the tests used
+    agent.responseMessage.metadata.framework.tokenUsage, which does not exist on that result:
+    the Token cost job then failed validation with "inputTokens: must not be null".
+
+    The connector's "Agent name" input is called agentName, NOT agent: the AI Agent Task's default
+    result variable is "agent", and an input mapping of the same name shadows it for the token
+    mappings that follow it (Zeebe applies input mappings in order, each visible to the next).
 
     Deliberately a single straight-line pass (Start -> AI Agent Task -> Token cost -> Done), not a
     loop: an earlier version of this file had a "continue looping?" gateway looping back to
@@ -23,20 +27,28 @@
     activations of your own, reintroduce a loop-back edge and gateway explicitly, driven by
     whatever real signal decides to continue - not by this file's old vestigial pattern.
 
+    WHY THE business_ PREFIX: on Camunda 8.10 SaaS clusters the default Optimize data filter exports
+    only variables whose names start with "business_". Without the prefix Optimize never sees the
+    totals (its report builder shows the Variable view as unavailable) and the variables are never
+    back-filled. business_totalCostUsd / business_totalCostMicros are the running totals,
+    business_costAgent is the agent name of the last Token cost call (a plain string, because
+    Optimize does not flatten the tokenCostResult object on SaaS). The Prometheus counters and the
+    connector's own tokenCostResult are unaffected. See optimize/ai-cost-dashboard.json.
+
     OPERATIONAL GOTCHA, hit once already: if you re-apply/update the "Token Cost Reporter"
     element template on Activity_TokenCost in Modeler (e.g. after a version bump), Modeler
     regenerates that task's ENTIRE zeebe:ioMapping from the template's own known fields only -
-    silently deleting the three zeebe:output lines below (tokenCostResult/totalCostMicros/
-    totalCostUsd) that aren't part of the template's own field set, since they were added by
-    hand. If totalCostMicros/totalCostUsd stop accumulating after touching this task in Modeler,
-    this is why - re-add those three output lines afterward.
+    silently deleting the four zeebe:output lines below (tokenCostResult, business_totalCostMicros,
+    business_totalCostUsd, business_costAgent) that aren't part of the template's own field set,
+    since they were added by hand. If the totals stop accumulating after touching this task in
+    Modeler, this is why - re-add those four output lines afterward.
   -->
   <bpmn:process id="ai-agent-task-cost-tracking" name="AI Agent Task with token/cost tracking" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1" name="Start">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
-          <zeebe:output source="=0" target="totalCostMicros" />
-          <zeebe:output source="=0" target="totalCostUsd" />
+          <zeebe:output source="=0" target="business_totalCostMicros" />
+          <zeebe:output source="=0" target="business_totalCostUsd" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:outgoing>Flow_StartToAgent</bpmn:outgoing>
@@ -69,22 +81,23 @@
       <bpmn:incoming>Flow_StartToAgent</bpmn:incoming>
       <bpmn:outgoing>Flow_AgentToTokenCost</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="Activity_TokenCost" name="Token cost" zeebe:modelerTemplate="io.github.camunda.TokenCostGovernor.v2" zeebe:modelerTemplateVersion="4" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIj4KICA8cGF0aCBkPSJNMTYgMiBMMjggNyBWMTUgQzI4IDIyLjUgMjIuOCAyNy44IDE2IDMwIEM5LjIgMjcuOCA0IDIyLjUgNCAxNSBWNyBaIgogICAgICAgIGZpbGw9IiMwZjc2NmUiIHN0cm9rZT0iIzEzNGU0YSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgPHBhdGggZD0iTTE2IDIgTDI4IDcgVjE1IEMyOCAyMi41IDIyLjggMjcuOCAxNiAzMCBaIiBmaWxsPSIjMTRiOGE2IiBvcGFjaXR5PSIwLjM1Ii8+CiAgPHRleHQgeD0iMTYiIHk9IjIxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIEhlbHZldGljYSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmZmZmYiPiQ8L3RleHQ+Cjwvc3ZnPgo=">
+    <bpmn:serviceTask id="Activity_TokenCost" name="Token cost" zeebe:modelerTemplate="io.github.camunda.TokenCostGovernor.v2" zeebe:modelerTemplateVersion="5" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIj4KICA8cGF0aCBkPSJNMTYgMiBMMjggNyBWMTUgQzI4IDIyLjUgMjIuOCAyNy44IDE2IDMwIEM5LjIgMjcuOCA0IDIyLjUgNCAxNSBWNyBaIgogICAgICAgIGZpbGw9IiMwZjc2NmUiIHN0cm9rZT0iIzEzNGU0YSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgPHBhdGggZD0iTTE2IDIgTDI4IDcgVjE1IEMyOCAyMi41IDIyLjggMjcuOCAxNiAzMCBaIiBmaWxsPSIjMTRiOGE2IiBvcGFjaXR5PSIwLjM1Ii8+CiAgPHRleHQgeD0iMTYiIHk9IjIxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIEhlbHZldGljYSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmZmZmYiPiQ8L3RleHQ+Cjwvc3ZnPgo=">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="io.github.camunda:token-cost-governor:1" retries="1" />
         <zeebe:ioMapping>
           <zeebe:input source="{{secrets.GOVERNOR_PRICE_TABLE}}" target="priceTableSecret" />
-          <zeebe:input source="&#34;anthropic&#34;" target="provider" />
-          <zeebe:input source="&#34;claude-haiku-4-5&#34;" target="model" />
-          <zeebe:input source="&#34;task-agent&#34;" target="agent" />
-          <zeebe:input source="=agent.responseMessage.metadata.framework.tokenUsage.inputTokenCount" target="inputTokens" />
-          <zeebe:input source="=agent.responseMessage.metadata.framework.tokenUsage.outputTokenCount" target="outputTokens" />
+          <zeebe:input source="anthropic" target="provider" />
+          <zeebe:input source="claude-haiku-4-5" target="model" />
+          <zeebe:input source="task-agent" target="agentName" />
+          <zeebe:input source="=agent.context.metrics.tokenUsage.inputTokenCount" target="inputTokens" />
+          <zeebe:input source="=agent.context.metrics.tokenUsage.outputTokenCount" target="outputTokens" />
           <zeebe:output source="=tokenCostResult" target="tokenCostResult" />
-          <zeebe:output source="=totalCostMicros + tokenCostResult.costMicros" target="totalCostMicros" />
-          <zeebe:output source="=totalCostUsd + tokenCostResult.costUsd" target="totalCostUsd" />
+          <zeebe:output source="=business_totalCostMicros + tokenCostResult.costMicros" target="business_totalCostMicros" />
+          <zeebe:output source="=business_totalCostUsd + tokenCostResult.costUsd" target="business_totalCostUsd" />
+          <zeebe:output source="=tokenCostResult.agent" target="business_costAgent" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
-          <zeebe:header key="elementTemplateVersion" value="3" />
+          <zeebe:header key="elementTemplateVersion" value="5" />
           <zeebe:header key="elementTemplateId" value="io.github.camunda.TokenCostGovernor.v2" />
           <zeebe:header key="resultVariable" value="tokenCostResult" />
           <zeebe:header key="retryBackoff" value="PT0S" />
