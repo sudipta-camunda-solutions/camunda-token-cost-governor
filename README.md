@@ -122,7 +122,7 @@ The Agent name field arrived in template version 3 and its input was renamed `ag
 in version 5 (see the note below on why); the current version is 6, which only changes the version number so
 a Modeler that still holds an older copy of version 5 picks the template up as new. Existing elements built from an older version need
 the template updated/re-applied in Modeler to show it — and re-applying regenerates the task's
-input/output mapping, which deletes the demo BPMN's hand-added `business_totalCostMicros`/`business_totalCostUsd`
+input/output mapping, which deletes the demo BPMN's hand-added `business_totalCost`/`business_totalCostUsd`
 accumulator outputs (see that file's top comment), so re-add those afterward. In Web Modeler, upload the
 template first, then import the demo BPMN (which already carries `agentName` and all its outputs) instead of
 clicking **Update** on an existing task.
@@ -216,7 +216,7 @@ instance, and Optimize can report on it, without any of the above.
 
 Prometheus/Grafana (above) is for real-time charts and for cost over time. For business-facing reports
 — "what did this instance cost," "how much this month" — Optimize is the better tool, fed by the demo BPMN
-files' `business_totalCostMicros`, `business_totalCostUsd` and `business_costAgent` variables. The Word manual
+files' `business_totalCost`, `business_totalCostUsd` and `business_costAgent` variables. The Word manual
 (Section 9) has the full walkthrough; this is the short version.
 
 **Two things decide whether Optimize can see the cost at all**
@@ -227,17 +227,28 @@ files' `business_totalCostMicros`, `business_totalCostUsd` and `business_costAge
    variable?"). The alternative is to change the variable filter in the cluster's settings in Console. Only
    instances started afterwards carry the variables.
 2. **The Token cost task keeps these output mappings** (re-applying the element template in Web Modeler removes
-   them, so re-add them): `tokenCostResult` = `=tokenCostResult`; `business_totalCostMicros` =
-   `=business_totalCostMicros + tokenCostResult.costMicros`; `business_totalCostUsd` =
+   them, so re-add them): `tokenCostResult` = `=tokenCostResult`; `business_totalCost` =
+   `=business_totalCost + tokenCostResult.costMicros`; `business_totalCostUsd` =
    `=business_totalCostUsd + tokenCostResult.costUsd`; `business_costAgent` = `=tokenCostResult.agent`. The Start
    event sets the two totals to 0. `business_costAgent` is a plain string because Optimize does not flatten object
-   variables such as `tokenCostResult` on SaaS. It holds only the agent of the *last* Token cost task, so a process
-   with several agents in one instance (the sub-process demo) needs one more output per task for a per-agent cost:
-   `business_researchAnalystCostMicros` = `=tokenCostResult.costMicros` on the Research Analyst task and
-   `business_quickAnswerCostMicros` = `=tokenCostResult.costMicros` on the Quick Answer task. These are whole
-   micro-dollars (1,000,000 = 1 USD) rather than USD on purpose: Zeebe exports a decimal below 0.001 as `7.77E-4`,
-   which Optimize's table prints as is, and Optimize rounds its number tiles to 3 decimals, so a small per-agent USD
-   figure would read `0.002`.
+   variables such as `tokenCostResult` on SaaS. Optimize's Variable view reads one variable per report, so a cost per
+   agent needs a variable per agent, written by that agent's Token cost task: `business_taskAgentCost` =
+   `=tokenCostResult.costMicros` in the AI Agent Task demo, and `business_researchAnalystCost` /
+   `business_quickAnswerCost` = `=tokenCostResult.costMicros` on the Research Analyst / Quick Answer tasks of the
+   sub-process demo.
+
+   In the sub-process demo one instance runs two agents, so `business_costAgent` lists all of them: the Start event
+   sets it to `""` and each Token cost task sets it to `=if business_costAgent = "" then tokenCostResult.agent else
+   business_costAgent + ", " + tokenCostResult.agent`, giving `research-analyst, quick-answer`. `tokenCostResult` itself
+   holds only the last call.
+
+   **Units.** `business_totalCostUsd` is in USD. `business_totalCost` and the per-agent variables are whole
+   micro-dollars (1,000,000 = 1 USD): the names carry no unit, the report titles do. They are integers on purpose: Zeebe
+   exports a decimal below 0.001 as `7.77E-4`, which Optimize's table prints as is, and Optimize rounds its number
+   tiles to 3 decimals, so a small USD figure would read `0.002`. The first versions of the demos used the names
+   `business_totalCostMicros`, `business_researchAnalystCostMicros`, `business_quickAnswerCostMicros` and per-agent USD
+   variables (`business_researchAnalystCostUsd`, `business_quickAnswerCostUsd`); instances that ran with them still
+   carry those variables, so the generated dashboards hide them from the table.
 
 **What Optimize can and cannot do.** Its Variable view returns one number (sum, average, minimum or maximum of a
 numeric variable over the filtered instances); its Group by can only be None, per Optimize's own list of valid
@@ -245,23 +256,26 @@ report combinations. So there is no bar chart of cost per month or per agent in 
 `governor_cost_usd_total` for that. Optimize does well at totals and averages for a slice (this month, this year,
 one agent) and a per-instance table that exports to CSV.
 
-**Import the ready-made dashboard.** [`optimize/ai-cost-dashboard.json`](optimize/ai-cost-dashboard.json) holds five
+**Import the ready-made dashboard.** [`optimize/ai-cost-dashboard.json`](optimize/ai-cost-dashboard.json) holds eight
 reports and a dashboard, `AI cost`:
 
 | # | Report | Shows |
 |---|---|---|
-| 1 | Cost of each process instance | Raw data table of completed instances: ID, start, end, `business_totalCostUsd`, `business_totalCostMicros`, `business_costAgent` |
-| 2 | Agent-wise cost (USD) | Number, sum of `business_totalCostUsd`; add an agent filter to the dashboard once data exists to select one agent |
-| 3 | Total spend this month (USD) | Number, sum, instances started this calendar month |
-| 4 | Total spend this year (USD) | Number, sum, instances started this calendar year |
-| 5 | Average cost per case (USD) | Number, average; the human-flow target is off until you set it |
+| 1 | Cost of each process instance | Raw data table of completed instances: ID, start, end, `business_totalCostUsd`, `business_totalCost` (micro-USD), `business_costAgent` (all agents of the instance), plus the per-agent cost variables, which Optimize adds as columns |
+| 2 | Research Analyst cost (micro-USD) | Number, sum of `business_researchAnalystCost`, sub-process demo only |
+| 3 | Quick Answer cost (micro-USD) | Number, sum of `business_quickAnswerCost`, sub-process demo only |
+| 4 | Task agent cost (micro-USD) | Number, sum of `business_taskAgentCost`, AI Agent Task demo only |
+| 5 | Total cost, all agents (USD) | Number, sum of `business_totalCostUsd` over both demos |
+| 6 | Total spend this month (USD) | Number, sum, instances started this calendar month |
+| 7 | Total spend this year (USD) | Number, sum, instances started this calendar year |
+| 8 | Average cost per case (USD) | Number, average; the human-flow target is off until you set it |
 
 1. In Optimize create a collection (`AI cost`) and add both demo processes (`ai-agent-task-cost-tracking` and
    `ai-agent-subprocess-cost-tracking`) as data sources, all versions. The first process in the file needs at least
    one instance in Optimize, and every process in the file must be a data source of the collection.
 2. Open the collection, **Create New** → **Import JSON**, pick the file. Camunda's documentation says only Optimize
    superusers can import and export.
-3. Open the dashboard. To compare with a human-handled case, open Report 5, switch on the progress bar in its
+3. Open the dashboard. To compare with a human-handled case, open Report 8, switch on the progress bar in its
    configuration and set the target to your cost per human-handled case.
 4. The file has no agent filter: Optimize only accepts a dashboard variable filter for a variable that already exists in
    its data. After the first instance with `business_costAgent` arrives, open the dashboard, **Edit**, add a **Variable**
@@ -273,20 +287,27 @@ reports and a dashboard, `AI cost`:
    8.10.0-alpha5; read `sourceIndexVersion` from an export of your own Optimize), or permissions. The same file can
    be posted to `/api/public/import?collectionId=<id>` on `https://<region>.optimize.camunda.io/<cluster-id>`.
 
-**Agent-wise cost for the sub-process demo.** [`optimize/ai-cost-dashboard -subprocess.json`](<optimize/ai-cost-dashboard -subprocess.json>)
-is a hand-maintained variant (`Subprocess AI cost`) for `ai-agent-subprocess-cost-tracking` only. One instance runs two
-agents, so Optimize needs a variable per agent: it has one tile for the Research Analyst
-(`business_researchAnalystCostMicros`), one for Quick Answer (`business_quickAnswerCostMicros`), both in micro-USD, one
-for the total in USD, then this month, this year and the average per case; the instance table shows both agent columns
-next to the total. Import it
-like the file above, but only after the updated BPMN is deployed and Optimize has imported at least one new instance:
-older instances have no per-agent variable and Optimize does not back-fill. Each extra agent needs its own variable
-and tile.
+**Cost per agent.** Each agent tile reads only the process that writes its variable, so its numbers are not mixed with
+the other demo. Import after the updated BPMN files are deployed and Optimize has imported at least one new instance of
+each process: older instances have no per-agent variable and Optimize does not back-fill. For each extra agent the
+process must write its own cost variable and you add a tile with `--agent "LABEL=VARIABLE[@PROCESS_ID]"` (see below).
 
-**Which processes it covers.** Every report in `ai-cost-dashboard.json` lists both demo processes as data sources, so the numbers add
+**Sub-process demo on its own.** [`optimize/ai-cost-dashboard -subprocess.json`](<optimize/ai-cost-dashboard -subprocess.json>)
+is the same dashboard (`Subprocess AI cost`) restricted to `ai-agent-subprocess-cost-tracking`: the Research Analyst and
+Quick Answer tiles, the total, this month, this year, the average per case and the instance table. It is generated too:
+
+```
+python optimize/generate-dashboard.py --process ai-agent-subprocess-cost-tracking="AI Agent Sub-process with token/cost tracking" \
+    --agent "Research Analyst=business_researchAnalystCost" --agent "Quick Answer=business_quickAnswerCost" \
+    --name "Subprocess AI cost" -o "optimize/ai-cost-dashboard -subprocess.json"
+```
+
+**Which processes it covers.** The total, month, year, average and table reports in `ai-cost-dashboard.json` list both
+demo processes as data sources, so the numbers add
 up over both, and the table shows the process ID per row. For your own processes run
 `python optimize/generate-dashboard.py --process my-agent-process` (repeat `--process` for several; `--process
-ID="Display name"`, `--versions latest`, `-o file` are also available), or add a process to an already-imported report
+ID="Display name"`, `--versions latest`, `--name`, `-o file` are also available, and `--agent` adds agent tiles: without
+`--process` the demo agents are used, with `--process` there are none unless you pass `--agent`), or add a process to an already-imported report
 in the report builder (**Add** next to the data source). Optimize has no "all processes" data source, and a process
 instance cannot be a data source: a report reads all instances of the listed processes, and you narrow it with
 filters (state, dates, `business_costAgent`). Importing the same file twice creates a second copy.

@@ -9,14 +9,15 @@ Where the tokens are: when an AI Agent Sub-process finishes, its job sets the va
 
 Zeebe refuses to deploy an ad-hoc sub-process with no activity, so each agent contains one tool (a script task); replace it with your own tools. The Token cost input for the agent label is called agentName, not agent: the sub-process result variable is agent and an input of that name would shadow it.
 
-business_ prefix: on Camunda 8.10 SaaS the default Optimize data filter exports only variables named business_*. business_totalCostUsd and business_totalCostMicros are running totals across both calls; business_costAgent and tokenCostResult hold the LAST call (Quick Answer). Each Token cost task also writes its own agent's cost to a variable of its own, business_researchAnalystCostMicros and business_quickAnswerCostMicros, because Optimize reads one variable per report and would otherwise show only the last agent. These are whole micro-dollars (1,000,000 = 1 USD), not USD: Zeebe exports a decimal below 0.001 as 7.77E-4, which is what Optimize's table would print, and Optimize rounds its number tiles to 3 decimals. The Prometheus counters also carry the per-agent split. See optimize/ai-cost-dashboard -subprocess.json.
+business_ prefix: on Camunda 8.10 SaaS the default Optimize data filter exports only variables named business_*. business_totalCostUsd (USD) and business_totalCost (whole micro-dollars) are running totals across both calls; business_costAgent lists the agent names of every Token cost call, comma separated ("research-analyst, quick-answer"), and tokenCostResult holds the LAST call (Quick Answer). Each Token cost task also writes its own agent's cost to a variable of its own, business_researchAnalystCost and business_quickAnswerCost, because Optimize reads one variable per report and would otherwise show only the last agent. Like business_totalCost these are whole micro-dollars (1,000,000 = 1 USD), not USD, and their names carry no unit: Zeebe exports a decimal below 0.001 as 7.77E-4, which is what Optimize's table would print, and Optimize rounds its number tiles to 3 decimals. The Prometheus counters also carry the per-agent split. See optimize/ai-cost-dashboard -subprocess.json.
 
-Gotcha: applying or updating the Token Cost Reporter element template on a Token cost task in Modeler regenerates its whole input/output mapping and deletes the five output lines (tokenCostResult, business_totalCostMicros, business_totalCostUsd, business_costAgent and the task's per-agent cost variable, business_researchAnalystCostMicros or business_quickAnswerCostMicros). Re-add them.</bpmn:documentation>
+Gotcha: applying or updating the Token Cost Reporter element template on a Token cost task in Modeler regenerates its whole input/output mapping and deletes the five output lines (tokenCostResult, business_totalCost, business_totalCostUsd, business_costAgent and the task's per-agent cost variable, business_researchAnalystCost or business_quickAnswerCost). Re-add them.</bpmn:documentation>
     <bpmn:startEvent id="StartEvent_1" name="Start">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
-          <zeebe:output source="=0" target="business_totalCostMicros" />
+          <zeebe:output source="=0" target="business_totalCost" />
           <zeebe:output source="=0" target="business_totalCostUsd" />
+          <zeebe:output source="=&#34;&#34;" target="business_costAgent" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:outgoing>Flow_1px4rdd</bpmn:outgoing>
@@ -121,10 +122,10 @@ Gotcha: applying or updating the Token Cost Reporter element template on a Token
           <zeebe:input source="=agent.context.metrics.tokenUsage.inputTokenCount" target="inputTokens" />
           <zeebe:input source="=agent.context.metrics.tokenUsage.outputTokenCount" target="outputTokens" />
           <zeebe:output source="=tokenCostResult" target="tokenCostResult" />
-          <zeebe:output source="=business_totalCostMicros + tokenCostResult.costMicros" target="business_totalCostMicros" />
+          <zeebe:output source="=business_totalCost + tokenCostResult.costMicros" target="business_totalCost" />
           <zeebe:output source="=business_totalCostUsd + tokenCostResult.costUsd" target="business_totalCostUsd" />
-          <zeebe:output source="=tokenCostResult.agent" target="business_costAgent" />
-          <zeebe:output source="=tokenCostResult.costMicros" target="business_researchAnalystCostMicros" />
+          <zeebe:output source="=if business_costAgent = &#34;&#34; then tokenCostResult.agent else business_costAgent + &#34;, &#34; + tokenCostResult.agent" target="business_costAgent" />
+          <zeebe:output source="=tokenCostResult.costMicros" target="business_researchAnalystCost" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
           <zeebe:header key="elementTemplateVersion" value="6" />
@@ -150,10 +151,10 @@ Gotcha: applying or updating the Token Cost Reporter element template on a Token
           <zeebe:input source="=agent.context.metrics.tokenUsage.inputTokenCount" target="inputTokens" />
           <zeebe:input source="=agent.context.metrics.tokenUsage.outputTokenCount" target="outputTokens" />
           <zeebe:output source="=tokenCostResult" target="tokenCostResult" />
-          <zeebe:output source="=business_totalCostMicros + tokenCostResult.costMicros" target="business_totalCostMicros" />
+          <zeebe:output source="=business_totalCost + tokenCostResult.costMicros" target="business_totalCost" />
           <zeebe:output source="=business_totalCostUsd + tokenCostResult.costUsd" target="business_totalCostUsd" />
-          <zeebe:output source="=tokenCostResult.agent" target="business_costAgent" />
-          <zeebe:output source="=tokenCostResult.costMicros" target="business_quickAnswerCostMicros" />
+          <zeebe:output source="=if business_costAgent = &#34;&#34; then tokenCostResult.agent else business_costAgent + &#34;, &#34; + tokenCostResult.agent" target="business_costAgent" />
+          <zeebe:output source="=tokenCostResult.costMicros" target="business_quickAnswerCost" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
           <zeebe:header key="elementTemplateVersion" value="6" />

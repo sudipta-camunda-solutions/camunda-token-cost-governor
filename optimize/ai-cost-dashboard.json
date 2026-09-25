@@ -3,7 +3,7 @@
     "id": "919b0a26-34dc-5203-b7ab-39a8c6304c95",
     "exportEntityType": "single_process_report",
     "name": "1 - Cost of each process instance",
-    "description": "One row per completed instance: cost in USD and micro-dollars, and the agent name.",
+    "description": "One row per completed instance: total cost in USD and in micro-USD (1,000,000 = 1 USD), the agent name(s) and the cost of each agent in micro-USD.",
     "sourceIndexVersion": 11,
     "collectionId": null,
     "data": {
@@ -41,7 +41,12 @@
             "businessKey",
             "duration",
             "engineName",
-            "tenantId"
+            "tenantId",
+            "variable:business_totalCostMicros",
+            "variable:business_researchAnalystCostMicros",
+            "variable:business_quickAnswerCostMicros",
+            "variable:business_researchAnalystCostUsd",
+            "variable:business_quickAnswerCostUsd"
           ],
           "includedColumns": [],
           "columnOrder": [
@@ -50,7 +55,7 @@
             "startDate",
             "endDate",
             "variable:business_totalCostUsd",
-            "variable:business_totalCostMicros",
+            "variable:business_totalCost",
             "variable:business_costAgent"
           ]
         }
@@ -85,10 +90,199 @@
     }
   },
   {
-    "id": "a1427ac8-e4eb-582b-a7d5-e5660007046e",
+    "id": "43c32cb6-a3c1-57b2-8310-478f412b269c",
     "exportEntityType": "single_process_report",
-    "name": "2 - Agent-wise cost (USD)",
-    "description": "Total cost of all completed instances. Add an agent filter on the dashboard (Edit, Filters, Variable, business_costAgent) to see one agent.",
+    "name": "2 - Research Analyst cost (micro-USD)",
+    "description": "Total cost of Research Analyst over all completed instances, in micro-USD (1,000,000 = 1 USD; variable business_researchAnalystCost).",
+    "sourceIndexVersion": 11,
+    "collectionId": null,
+    "data": {
+      "definitions": [
+        {
+          "identifier": "definition-1",
+          "key": "ai-agent-subprocess-cost-tracking",
+          "name": "AI Agent Sub-process with token/cost tracking",
+          "displayName": "AI Agent Sub-process with token/cost tracking",
+          "versions": [
+            "all"
+          ],
+          "tenantIds": [
+            "<default>"
+          ]
+        }
+      ],
+      "configuration": {
+        "aggregationTypes": [
+          {
+            "type": "sum",
+            "value": null
+          }
+        ],
+        "showInstanceCount": true
+      },
+      "filter": [
+        {
+          "type": "completedInstancesOnly",
+          "data": null,
+          "filterLevel": "instance",
+          "appliedTo": [
+            "all"
+          ]
+        }
+      ],
+      "view": {
+        "entity": "variable",
+        "properties": [
+          {
+            "name": "business_researchAnalystCost",
+            "type": "Long"
+          }
+        ]
+      },
+      "groupBy": {
+        "type": "none",
+        "value": null
+      },
+      "distributedBy": {
+        "type": "none",
+        "value": null
+      },
+      "visualization": "number",
+      "managementReport": false,
+      "instantPreviewReport": false
+    }
+  },
+  {
+    "id": "ceee425c-e6bd-57f3-9936-dfaf47afbe71",
+    "exportEntityType": "single_process_report",
+    "name": "3 - Quick Answer cost (micro-USD)",
+    "description": "Total cost of Quick Answer over all completed instances, in micro-USD (1,000,000 = 1 USD; variable business_quickAnswerCost).",
+    "sourceIndexVersion": 11,
+    "collectionId": null,
+    "data": {
+      "definitions": [
+        {
+          "identifier": "definition-1",
+          "key": "ai-agent-subprocess-cost-tracking",
+          "name": "AI Agent Sub-process with token/cost tracking",
+          "displayName": "AI Agent Sub-process with token/cost tracking",
+          "versions": [
+            "all"
+          ],
+          "tenantIds": [
+            "<default>"
+          ]
+        }
+      ],
+      "configuration": {
+        "aggregationTypes": [
+          {
+            "type": "sum",
+            "value": null
+          }
+        ],
+        "showInstanceCount": true
+      },
+      "filter": [
+        {
+          "type": "completedInstancesOnly",
+          "data": null,
+          "filterLevel": "instance",
+          "appliedTo": [
+            "all"
+          ]
+        }
+      ],
+      "view": {
+        "entity": "variable",
+        "properties": [
+          {
+            "name": "business_quickAnswerCost",
+            "type": "Long"
+          }
+        ]
+      },
+      "groupBy": {
+        "type": "none",
+        "value": null
+      },
+      "distributedBy": {
+        "type": "none",
+        "value": null
+      },
+      "visualization": "number",
+      "managementReport": false,
+      "instantPreviewReport": false
+    }
+  },
+  {
+    "id": "97f358a7-ed69-5ad5-9dc4-efd865fdbebc",
+    "exportEntityType": "single_process_report",
+    "name": "4 - Task agent cost (micro-USD)",
+    "description": "Total cost of Task agent over all completed instances, in micro-USD (1,000,000 = 1 USD; variable business_taskAgentCost).",
+    "sourceIndexVersion": 11,
+    "collectionId": null,
+    "data": {
+      "definitions": [
+        {
+          "identifier": "definition-1",
+          "key": "ai-agent-task-cost-tracking",
+          "name": "AI Agent Task with token/cost tracking",
+          "displayName": "AI Agent Task with token/cost tracking",
+          "versions": [
+            "all"
+          ],
+          "tenantIds": [
+            "<default>"
+          ]
+        }
+      ],
+      "configuration": {
+        "aggregationTypes": [
+          {
+            "type": "sum",
+            "value": null
+          }
+        ],
+        "showInstanceCount": true
+      },
+      "filter": [
+        {
+          "type": "completedInstancesOnly",
+          "data": null,
+          "filterLevel": "instance",
+          "appliedTo": [
+            "all"
+          ]
+        }
+      ],
+      "view": {
+        "entity": "variable",
+        "properties": [
+          {
+            "name": "business_taskAgentCost",
+            "type": "Long"
+          }
+        ]
+      },
+      "groupBy": {
+        "type": "none",
+        "value": null
+      },
+      "distributedBy": {
+        "type": "none",
+        "value": null
+      },
+      "visualization": "number",
+      "managementReport": false,
+      "instantPreviewReport": false
+    }
+  },
+  {
+    "id": "bcbe968c-465e-5b1b-adc0-1e3a493a2c27",
+    "exportEntityType": "single_process_report",
+    "name": "5 - Total cost, all agents (USD)",
+    "description": "Total cost of all completed instances, all agents together.",
     "sourceIndexVersion": 11,
     "collectionId": null,
     "data": {
@@ -160,9 +354,9 @@
     }
   },
   {
-    "id": "3d7af9ad-aee0-5511-bea9-e61070302e13",
+    "id": "7004e85c-0586-5ecf-a270-dd3929b917c7",
     "exportEntityType": "single_process_report",
-    "name": "3 - Total spend this month (USD)",
+    "name": "6 - Total spend this month (USD)",
     "description": "Total cost of completed instances started in the current calendar month.",
     "sourceIndexVersion": 11,
     "collectionId": null,
@@ -252,9 +446,9 @@
     }
   },
   {
-    "id": "83e60459-c0fe-5214-9f44-e1c3f053d097",
+    "id": "11c13699-4d5f-5915-bb9c-604165672083",
     "exportEntityType": "single_process_report",
-    "name": "4 - Total spend this year (USD)",
+    "name": "7 - Total spend this year (USD)",
     "description": "Total cost of completed instances started in the current calendar year.",
     "sourceIndexVersion": 11,
     "collectionId": null,
@@ -344,9 +538,9 @@
     }
   },
   {
-    "id": "ff6660d9-4336-5f77-b6b5-1e6d049f65db",
+    "id": "044f3869-c873-5220-9560-a9337b276e66",
     "exportEntityType": "single_process_report",
-    "name": "5 - Average cost per case (USD)",
+    "name": "8 - Average cost per case (USD)",
     "description": "Average cost of one completed instance. Turn on the target in the report configuration to compare it with a human-handled case.",
     "sourceIndexVersion": 11,
     "collectionId": null,
@@ -427,10 +621,49 @@
     "collectionId": null,
     "tiles": [
       {
-        "id": "a1427ac8-e4eb-582b-a7d5-e5660007046e",
+        "id": "43c32cb6-a3c1-57b2-8310-478f412b269c",
         "position": {
           "x": 0,
           "y": 0
+        },
+        "dimensions": {
+          "width": 6,
+          "height": 3
+        },
+        "type": "optimize_report",
+        "configuration": null
+      },
+      {
+        "id": "ceee425c-e6bd-57f3-9936-dfaf47afbe71",
+        "position": {
+          "x": 6,
+          "y": 0
+        },
+        "dimensions": {
+          "width": 6,
+          "height": 3
+        },
+        "type": "optimize_report",
+        "configuration": null
+      },
+      {
+        "id": "97f358a7-ed69-5ad5-9dc4-efd865fdbebc",
+        "position": {
+          "x": 12,
+          "y": 0
+        },
+        "dimensions": {
+          "width": 6,
+          "height": 3
+        },
+        "type": "optimize_report",
+        "configuration": null
+      },
+      {
+        "id": "bcbe968c-465e-5b1b-adc0-1e3a493a2c27",
+        "position": {
+          "x": 0,
+          "y": 3
         },
         "dimensions": {
           "width": 5,
@@ -440,10 +673,10 @@
         "configuration": null
       },
       {
-        "id": "3d7af9ad-aee0-5511-bea9-e61070302e13",
+        "id": "7004e85c-0586-5ecf-a270-dd3929b917c7",
         "position": {
           "x": 5,
-          "y": 0
+          "y": 3
         },
         "dimensions": {
           "width": 4,
@@ -453,10 +686,10 @@
         "configuration": null
       },
       {
-        "id": "83e60459-c0fe-5214-9f44-e1c3f053d097",
+        "id": "11c13699-4d5f-5915-bb9c-604165672083",
         "position": {
           "x": 9,
-          "y": 0
+          "y": 3
         },
         "dimensions": {
           "width": 4,
@@ -466,10 +699,10 @@
         "configuration": null
       },
       {
-        "id": "ff6660d9-4336-5f77-b6b5-1e6d049f65db",
+        "id": "044f3869-c873-5220-9560-a9337b276e66",
         "position": {
           "x": 13,
-          "y": 0
+          "y": 3
         },
         "dimensions": {
           "width": 5,
@@ -482,7 +715,7 @@
         "id": "919b0a26-34dc-5203-b7ab-39a8c6304c95",
         "position": {
           "x": 0,
-          "y": 3
+          "y": 6
         },
         "dimensions": {
           "width": 18,

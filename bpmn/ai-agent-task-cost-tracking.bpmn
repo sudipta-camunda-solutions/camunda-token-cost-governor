@@ -30,24 +30,28 @@
     WHY THE business_ PREFIX: on Camunda 8.10 SaaS clusters the default Optimize data filter exports
     only variables whose names start with "business_". Without the prefix Optimize never sees the
     totals (its report builder shows the Variable view as unavailable) and the variables are never
-    back-filled. business_totalCostUsd / business_totalCostMicros are the running totals,
+    back-filled. business_totalCostUsd (USD) / business_totalCost (whole micro-dollars,
+    1,000,000 = 1 USD) are the running totals,
     business_costAgent is the agent name of the last Token cost call (a plain string, because
-    Optimize does not flatten the tokenCostResult object on SaaS). The Prometheus counters and the
+    Optimize does not flatten the tokenCostResult object on SaaS), and business_taskAgentCost is
+    this agent's own cost in whole micro-dollars (the same figure as business_totalCost here; it
+    exists so Optimize can show a cost tile per agent, next to the sub-process demo's agents).
+    The Prometheus counters and the
     connector's own tokenCostResult are unaffected. See optimize/ai-cost-dashboard.json.
 
     OPERATIONAL GOTCHA, hit once already: if you re-apply/update the "Token Cost Reporter"
     element template on Activity_TokenCost in Modeler (e.g. after a version bump), Modeler
     regenerates that task's ENTIRE zeebe:ioMapping from the template's own known fields only -
-    silently deleting the four zeebe:output lines below (tokenCostResult, business_totalCostMicros,
-    business_totalCostUsd, business_costAgent) that aren't part of the template's own field set,
-    since they were added by hand. If the totals stop accumulating after touching this task in
-    Modeler, this is why - re-add those four output lines afterward.
+    silently deleting the five zeebe:output lines below (tokenCostResult, business_totalCost,
+    business_totalCostUsd, business_costAgent, business_taskAgentCost) that aren't part of the
+    template's own field set, since they were added by hand. If the totals stop accumulating
+    after touching this task in Modeler, this is why - re-add those five output lines afterward.
   -->
   <bpmn:process id="ai-agent-task-cost-tracking" name="AI Agent Task with token/cost tracking" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1" name="Start">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
-          <zeebe:output source="=0" target="business_totalCostMicros" />
+          <zeebe:output source="=0" target="business_totalCost" />
           <zeebe:output source="=0" target="business_totalCostUsd" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
@@ -92,9 +96,10 @@
           <zeebe:input source="=agent.context.metrics.tokenUsage.inputTokenCount" target="inputTokens" />
           <zeebe:input source="=agent.context.metrics.tokenUsage.outputTokenCount" target="outputTokens" />
           <zeebe:output source="=tokenCostResult" target="tokenCostResult" />
-          <zeebe:output source="=business_totalCostMicros + tokenCostResult.costMicros" target="business_totalCostMicros" />
+          <zeebe:output source="=business_totalCost + tokenCostResult.costMicros" target="business_totalCost" />
           <zeebe:output source="=business_totalCostUsd + tokenCostResult.costUsd" target="business_totalCostUsd" />
           <zeebe:output source="=tokenCostResult.agent" target="business_costAgent" />
+          <zeebe:output source="=tokenCostResult.costMicros" target="business_taskAgentCost" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
           <zeebe:header key="elementTemplateVersion" value="6" />

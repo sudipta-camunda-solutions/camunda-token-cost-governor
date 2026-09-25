@@ -45,7 +45,7 @@ import org.junit.jupiter.api.Test;
  * that loop-back could never actually fire, and Modeler's own linter flags a task with multiple
  * incoming sequence flows and no explicit join as an error regardless - see the BPMN file's own
  * top comment for the full story. There is accordingly no {@code iterationCount} variable and no
- * multi-iteration test here anymore; {@code business_totalCostMicros}/{@code business_totalCostUsd} still exist and
+ * multi-iteration test here anymore; {@code business_totalCost}/{@code business_totalCostUsd} still exist and
  * are still asserted on, since a real AI Agent Task/Token Cost Reporter pair only ever needs one
  * pass through this file to prove the wiring is correct end to end.
  */
@@ -155,9 +155,10 @@ class GovernorProcessTest {
     assertThat(instance)
         .isCompleted()
         .hasCompletedElements("Activity_AiAgentTask", "Activity_TokenCost", "EndEvent_Done")
-        .hasVariable("business_totalCostMicros", COST_MICROS_PER_CALL)
+        .hasVariable("business_totalCost", COST_MICROS_PER_CALL)
         .hasVariable("business_totalCostUsd", 1.25)
-        .hasVariable("business_costAgent", "task-agent");
+        .hasVariable("business_costAgent", "task-agent")
+        .hasVariable("business_taskAgentCost", COST_MICROS_PER_CALL);
 
     // The point of this test: the connector must RECEIVE real token counts, model and agent name -
     // an earlier version passed a wrong FEEL path and the job failed validation with null tokens
@@ -272,11 +273,11 @@ class GovernorProcessTest {
         .isCompleted()
         .hasCompletedElements(
             "Activity_1kyv3gj", "Tool_GetDateTime1", "Activity_0vkhe3f", "Activity_0alays1", "Activity_1vgqpep", "EndEvent_Done")
-        .hasVariable("business_totalCostMicros", analystMicros + quickMicros)
+        .hasVariable("business_totalCost", analystMicros + quickMicros)
         .hasVariable("business_totalCostUsd", (analystMicros + quickMicros) / 1_000_000.0)
-        .hasVariable("business_costAgent", "quick-answer")
-        .hasVariable("business_researchAnalystCostMicros", analystMicros)
-        .hasVariable("business_quickAnswerCostMicros", quickMicros);
+        .hasVariable("business_costAgent", "research-analyst, quick-answer")
+        .hasVariable("business_researchAnalystCost", analystMicros)
+        .hasVariable("business_quickAnswerCost", quickMicros);
 
     Assertions.assertEquals(2, connectorCalls.size(), "one Token cost call per agent");
     Map<String, Object> analystCall = connectorCalls.get(0);
