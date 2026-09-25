@@ -81,7 +81,7 @@
       <bpmn:incoming>Flow_StartToAgent</bpmn:incoming>
       <bpmn:outgoing>Flow_AgentToTokenCost</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="Activity_TokenCost" name="Token cost" zeebe:modelerTemplate="io.github.camunda.TokenCostGovernor.v2" zeebe:modelerTemplateVersion="5" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIj4KICA8cGF0aCBkPSJNMTYgMiBMMjggNyBWMTUgQzI4IDIyLjUgMjIuOCAyNy44IDE2IDMwIEM5LjIgMjcuOCA0IDIyLjUgNCAxNSBWNyBaIgogICAgICAgIGZpbGw9IiMwZjc2NmUiIHN0cm9rZT0iIzEzNGU0YSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgPHBhdGggZD0iTTE2IDIgTDI4IDcgVjE1IEMyOCAyMi41IDIyLjggMjcuOCAxNiAzMCBaIiBmaWxsPSIjMTRiOGE2IiBvcGFjaXR5PSIwLjM1Ii8+CiAgPHRleHQgeD0iMTYiIHk9IjIxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIEhlbHZldGljYSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmZmZmYiPiQ8L3RleHQ+Cjwvc3ZnPgo=">
+    <bpmn:serviceTask id="Activity_TokenCost" name="Token cost" zeebe:modelerTemplate="io.github.camunda.TokenCostGovernor.v2" zeebe:modelerTemplateVersion="6" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIj4KICA8cGF0aCBkPSJNMTYgMiBMMjggNyBWMTUgQzI4IDIyLjUgMjIuOCAyNy44IDE2IDMwIEM5LjIgMjcuOCA0IDIyLjUgNCAxNSBWNyBaIgogICAgICAgIGZpbGw9IiMwZjc2NmUiIHN0cm9rZT0iIzEzNGU0YSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgPHBhdGggZD0iTTE2IDIgTDI4IDcgVjE1IEMyOCAyMi41IDIyLjggMjcuOCAxNiAzMCBaIiBmaWxsPSIjMTRiOGE2IiBvcGFjaXR5PSIwLjM1Ii8+CiAgPHRleHQgeD0iMTYiIHk9IjIxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIEhlbHZldGljYSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmZmZmYiPiQ8L3RleHQ+Cjwvc3ZnPgo=">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="io.github.camunda:token-cost-governor:1" retries="1" />
         <zeebe:ioMapping>
@@ -97,7 +97,7 @@
           <zeebe:output source="=tokenCostResult.agent" target="business_costAgent" />
         </zeebe:ioMapping>
         <zeebe:taskHeaders>
-          <zeebe:header key="elementTemplateVersion" value="5" />
+          <zeebe:header key="elementTemplateVersion" value="6" />
           <zeebe:header key="elementTemplateId" value="io.github.camunda.TokenCostGovernor.v2" />
           <zeebe:header key="resultVariable" value="tokenCostResult" />
           <zeebe:header key="retryBackoff" value="PT0S" />

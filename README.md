@@ -119,10 +119,13 @@ something per-instance or per-customer (e.g. `=customerId`), or every distinct v
 permanent new time series and Prometheus's storage grows without bound.
 
 The Agent name field arrived in template version 3 and its input was renamed `agent` → `agentName`
-in version 5 (see the note below on why). Existing elements built from an older version need
+in version 5 (see the note below on why); the current version is 6, which only changes the version number so
+a Modeler that still holds an older copy of version 5 picks the template up as new. Existing elements built from an older version need
 the template updated/re-applied in Modeler to show it — and re-applying regenerates the task's
 input/output mapping, which deletes the demo BPMN's hand-added `business_totalCostMicros`/`business_totalCostUsd`
-accumulator outputs (see that file's top comment), so re-add those afterward.
+accumulator outputs (see that file's top comment), so re-add those afterward. In Web Modeler, upload the
+template first, then import the demo BPMN (which already carries `agentName` and all its outputs) instead of
+clicking **Update** on an existing task.
 
 The FEEL paths above are the real AI Agent Task result shape (`agent` being whatever you named the
 result variable), read from a real process instance on a live cluster (AI Agent element template
@@ -228,7 +231,13 @@ files' `business_totalCostMicros`, `business_totalCostUsd` and `business_costAge
    `=business_totalCostMicros + tokenCostResult.costMicros`; `business_totalCostUsd` =
    `=business_totalCostUsd + tokenCostResult.costUsd`; `business_costAgent` = `=tokenCostResult.agent`. The Start
    event sets the two totals to 0. `business_costAgent` is a plain string because Optimize does not flatten object
-   variables such as `tokenCostResult` on SaaS.
+   variables such as `tokenCostResult` on SaaS. It holds only the agent of the *last* Token cost task, so a process
+   with several agents in one instance (the sub-process demo) needs one more output per task for a per-agent cost:
+   `business_researchAnalystCostMicros` = `=tokenCostResult.costMicros` on the Research Analyst task and
+   `business_quickAnswerCostMicros` = `=tokenCostResult.costMicros` on the Quick Answer task. These are whole
+   micro-dollars (1,000,000 = 1 USD) rather than USD on purpose: Zeebe exports a decimal below 0.001 as `7.77E-4`,
+   which Optimize's table prints as is, and Optimize rounds its number tiles to 3 decimals, so a small per-agent USD
+   figure would read `0.002`.
 
 **What Optimize can and cannot do.** Its Variable view returns one number (sum, average, minimum or maximum of a
 numeric variable over the filtered instances); its Group by can only be None, per Optimize's own list of valid
@@ -264,7 +273,17 @@ reports and a dashboard, `AI cost`:
    8.10.0-alpha5; read `sourceIndexVersion` from an export of your own Optimize), or permissions. The same file can
    be posted to `/api/public/import?collectionId=<id>` on `https://<region>.optimize.camunda.io/<cluster-id>`.
 
-**Which processes it covers.** Every report in the file lists both demo processes as data sources, so the numbers add
+**Agent-wise cost for the sub-process demo.** [`optimize/ai-cost-dashboard -subprocess.json`](<optimize/ai-cost-dashboard -subprocess.json>)
+is a hand-maintained variant (`Subprocess AI cost`) for `ai-agent-subprocess-cost-tracking` only. One instance runs two
+agents, so Optimize needs a variable per agent: it has one tile for the Research Analyst
+(`business_researchAnalystCostMicros`), one for Quick Answer (`business_quickAnswerCostMicros`), both in micro-USD, one
+for the total in USD, then this month, this year and the average per case; the instance table shows both agent columns
+next to the total. Import it
+like the file above, but only after the updated BPMN is deployed and Optimize has imported at least one new instance:
+older instances have no per-agent variable and Optimize does not back-fill. Each extra agent needs its own variable
+and tile.
+
+**Which processes it covers.** Every report in `ai-cost-dashboard.json` lists both demo processes as data sources, so the numbers add
 up over both, and the table shows the process ID per row. For your own processes run
 `python optimize/generate-dashboard.py --process my-agent-process` (repeat `--process` for several; `--process
 ID="Display name"`, `--versions latest`, `-o file` are also available), or add a process to an already-imported report

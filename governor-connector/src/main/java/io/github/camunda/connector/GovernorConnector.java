@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 @ElementTemplate(
     id = "io.github.camunda.TokenCostGovernor.v2",
     name = "Token Cost Reporter",
-    version = 5,
+    version = 6,
     description = "Computes the token count and USD cost of one LLM call.",
     icon = "icon.svg",
     documentationRef = "https://docs.camunda.io/docs/components/connectors/custom-built-connectors/connector-sdk/",
