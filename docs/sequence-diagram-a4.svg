@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 794 1123" width="210mm" height="297mm" role="img" aria-label="Sequence diagram in four columns: developer or admin, GovernorConnector, Camunda Console, SaaS cluster. The admin creates the GOVERNOR_PRICE_TABLE cluster secret and an API client, the connector runtime signs in and opens a job stream to the cluster, and for each Token cost task it reads the secret from the Console, prices the tokens and completes the job." font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<title>How the connector uses the cluster secret</title>
+<rect width="794" height="1123" fill="#ffffff"/>
+<g transform="translate(52.59 30) scale(1.0763)">
+<rect x="0" y="152.0" width="640" height="236.0" fill="#f6f7f9" stroke="none"/>
+<rect x="0" y="388.0" width="640" height="116.0" fill="#eceff4" stroke="none"/>
+<rect x="0" y="504.0" width="640" height="324.0" fill="#f6f7f9" stroke="none"/>
+<line x1="320" y1="92" x2="320" y2="836" stroke-width="1.5" stroke-dasharray="2 6" stroke="#6b7280"/>
+<line x1="86.0" y1="144" x2="86.0" y2="836" stroke-width="1" stroke-dasharray="3 4" stroke="#a9b1bd"/>
+<line x1="242.0" y1="144" x2="242.0" y2="836" stroke-width="1" stroke-dasharray="3 4" stroke="#a9b1bd"/>
+<line x1="398.0" y1="144" x2="398.0" y2="836" stroke-width="1" stroke-dasharray="3 4" stroke="#a9b1bd"/>
+<line x1="554.0" y1="144" x2="554.0" y2="836" stroke-width="1" stroke-dasharray="3 4" stroke="#a9b1bd"/>
+<text x="14.0" y="172.0" font-size="12" text-anchor="start" font-weight="bold" letter-spacing="0.06em" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">1  SET UP</text>
+<text x="14.0" y="172.0" font-size="12" text-anchor="start" font-weight="bold" letter-spacing="0.06em" fill="#111827">1  SET UP</text>
+<text x="97.3" y="172.0" font-size="11" text-anchor="start" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">once, by the admin</text>
+<text x="97.3" y="172.0" font-size="11" text-anchor="start" fill="#4b5563">once, by the admin</text>
+<text x="242.0" y="200.0" font-size="12" text-anchor="middle" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">create the cluster secret GOVERNOR_PRICE_TABLE (a JSON price table)</text>
+<text x="242.0" y="200.0" font-size="12" text-anchor="middle" fill="#b45309">create the cluster secret GOVERNOR_PRICE_TABLE (a JSON price table)</text>
+<line x1="86.0" y1="212.0" x2="390.0" y2="212.0" stroke-width="1.5" stroke="#b45309"/>
+<polygon points="398.0,212.0 389.0,207.5 389.0,216.5" fill="#b45309" stroke="none"/>
+<circle cx="99.0" cy="212.0" r="9" fill="#111827" stroke="none"/>
+<text x="99.0" y="215.8" font-size="11" text-anchor="middle" font-weight="bold" fill="#ffffff">1</text>
+<text x="242.0" y="235.0" font-size="12" text-anchor="middle" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">create an API client with the scopes Orchestration Cluster API and Secrets</text>
+<text x="242.0" y="235.0" font-size="12" text-anchor="middle" fill="#b45309">create an API client with the scopes Orchestration Cluster API and Secrets</text>
+<line x1="86.0" y1="247.0" x2="390.0" y2="247.0" stroke-width="1.5" stroke="#b45309"/>
+<polygon points="398.0,247.0 389.0,242.5 389.0,251.5" fill="#b45309" stroke="none"/>
+<circle cx="99.0" cy="247.0" r="9" fill="#111827" stroke="none"/>
+<text x="99.0" y="250.8" font-size="11" text-anchor="middle" font-weight="bold" fill="#ffffff">2</text>
+<text x="242.0" y="270.0" font-size="12" text-anchor="middle" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">client id and client secret</text>
+<text x="242.0" y="270.0" font-size="12" text-anchor="middle" fill="#b45309">client id and client secret</text>
+<line x1="398.0" y1="282.0" x2="94.0" y2="282.0" stroke-width="1.5" stroke-dasharray="5 4" stroke="#b45309"/>
+<polygon points="86.0,282.0 95.0,277.5 95.0,286.5" fill="#b45309" stroke="none"/>
+<circle cx="385.0" cy="282.0" r="9" fill="#111827" stroke="none"/>
+<text x="385.0" y="285.9" font-size="11" text-anchor="middle" font-weight="bold" fill="#ffffff">3</text>
+<text x="164.0" y="305.0" font-size="12" text-anchor="middle" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">put client id, secret, cluster id and region into</text>
+<text x="164.0" y="305.0" font-size="12" text-anchor="middle" fill="#b45309">put client id, secret, cluster id and region into</text>
+<text x="164.0" y="320.0" font-size="12" text-anchor="middle" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">docker/.env, start the runtime</text>
+<text x="164.0" y="320.0" font-size="12" text-anchor="middle" fill="#b45309">docker/.env, start the runtime</text>
+<line x1="86.0" y1="332.0" x2="234.0" y2="332.0" stroke-width="1.5" stroke="#b45309"/>
+<polygon points="242.0,332.0 233.0,327.5 233.0,336.5" fill="#b45309" stroke="none"/>
+<circle cx="99.0" cy="332.0" r="9" fill="#111827" stroke="none"/>
+<text x="99.0" y="335.9" font-size="11" text-anchor="middle" font-weight="bold" fill="#ffffff">4</text>
+<text x="320.0" y="355.0" font-size="12" text-anchor="middle" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">deploy the BPMN: the Token cost task uses {{secrets.GOVERNOR_PRICE_TABLE}}</text>
+<text x="320.0" y="355.0" font-size="12" text-anchor="middle" fill="#111827">deploy the BPMN: the Token cost task uses {{secrets.GOVERNOR_PRICE_TABLE}}</text>
+<line x1="86.0" y1="367.0" x2="546.0" y2="367.0" stroke-width="1.5" stroke="#111827"/>
+<polygon points="554.0,367.0 545.0,362.5 545.0,371.5" fill="#111827" stroke="none"/>
+<circle cx="99.0" cy="367.0" r="9" fill="#111827" stroke="none"/>
+<text x="99.0" y="370.9" font-size="11" text-anchor="middle" font-weight="bold" fill="#ffffff">5</text>
+<text x="14.0" y="408.0" font-size="12" text-anchor="start" font-weight="bold" letter-spacing="0.06em" stroke-width="4" stroke-linejoin="round" fill="#eceff4" stroke="#eceff4">2  CONNECT</text>
+<text x="14.0" y="408.0" font-size="12" text-anchor="start" font-weight="bold" letter-spacing="0.06em" fill="#111827">2  CONNECT</text>
+<text x="111.5" y="408.0" font-size="11" text-anchor="start" stroke-width="4" stroke-linejoin="round" fill="#eceff4" stroke="#eceff4">the runtime calls out, SaaS never calls in</text>
+<text x="111.5" y="408.0" font-size="11" text-anchor="start" fill="#4b5563">the runtime calls out, SaaS never calls in</text>
+<text x="320.0" y="436.0" font-size="12" text-anchor="middle" stroke-width="4" stroke-linejoin="round" fill="#eceff4" stroke="#eceff4">sign in with the API client (OAuth), get a token</text>
+<text x="320.0" y="436.0" font-size="12" text-anchor="middle" fill="#b45309">sign in with the API client (OAuth), get a token</text>
+<line x1="242.0" y1="448.0" x2="390.0" y2="448.0" stroke-width="1.5" stroke="#b45309"/>
+<polygon points="398.0,448.0 389.0,443.5 389.0,452.5" fill="#b45309" stroke="none"/>
+<circle cx="255.0" cy="448.0" r="9" fill="#111827" stroke="none"/>
+<text x="255.0" y="451.9" font-size="11" text-anchor="middle" font-weight="bold" fill="#ffffff">6</text>
+<text x="398.0" y="471.0" font-size="12" text-anchor="middle" stroke-width="4" stroke-linejoin="round" fill="#eceff4" stroke="#eceff4">open the job stream for token-cost-governor jobs</text>
+<text x="398.0" y="471.0" font-size="12" text-anchor="middle" fill="#111827">open the job stream for token-cost-governor jobs</text>
+<line x1="242.0" y1="483.0" x2="546.0" y2="483.0" stroke-width="1.5" stroke="#111827"/>
+<polygon points="554.0,483.0 545.0,478.5 545.0,487.5" fill="#111827" stroke="none"/>
+<circle cx="255.0" cy="483.0" r="9" fill="#111827" stroke="none"/>
+<text x="255.0" y="486.9" font-size="11" text-anchor="middle" font-weight="bold" fill="#ffffff">7</text>
+<text x="14.0" y="524.0" font-size="12" text-anchor="start" font-weight="bold" letter-spacing="0.06em" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">3  EACH TOKEN COST TASK</text>
+<text x="14.0" y="524.0" font-size="12" text-anchor="start" font-weight="bold" letter-spacing="0.06em" fill="#111827">3  EACH TOKEN COST TASK</text>
+<text x="219.9" y="524.0" font-size="11" text-anchor="start" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">at run time</text>
+<text x="219.9" y="524.0" font-size="11" text-anchor="start" fill="#4b5563">at run time</text>
+<text x="398.0" y="552.0" font-size="12" text-anchor="middle" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">job with the placeholder {{secrets.GOVERNOR_PRICE_TABLE}}</text>
+<text x="398.0" y="552.0" font-size="12" text-anchor="middle" fill="#111827">job with the placeholder {{secrets.GOVERNOR_PRICE_TABLE}}</text>
+<line x1="554.0" y1="564.0" x2="250.0" y2="564.0" stroke-width="1.5" stroke-dasharray="5 4" stroke="#111827"/>
+<polygon points="242.0,564.0 251.0,559.5 251.0,568.5" fill="#111827" stroke="none"/>
+<circle cx="541.0" cy="564.0" r="9" fill="#111827" stroke="none"/>
+<text x="541.0" y="567.9" font-size="11" text-anchor="middle" font-weight="bold" fill="#ffffff">8</text>
+<text x="320.0" y="587.0" font-size="12" text-anchor="middle" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">read GOVERNOR_PRICE_TABLE (audience</text>
+<text x="320.0" y="587.0" font-size="12" text-anchor="middle" fill="#b45309">read GOVERNOR_PRICE_TABLE (audience</text>
+<text x="320.0" y="602.0" font-size="12" text-anchor="middle" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">secrets.camunda.io)</text>
+<text x="320.0" y="602.0" font-size="12" text-anchor="middle" fill="#b45309">secrets.camunda.io)</text>
+<line x1="242.0" y1="614.0" x2="390.0" y2="614.0" stroke-width="1.5" stroke="#b45309"/>
+<polygon points="398.0,614.0 389.0,609.5 389.0,618.5" fill="#b45309" stroke="none"/>
+<circle cx="255.0" cy="614.0" r="9" fill="#111827" stroke="none"/>
+<text x="255.0" y="617.9" font-size="11" text-anchor="middle" font-weight="bold" fill="#ffffff">9</text>
+<text x="320.0" y="637.0" font-size="12" text-anchor="middle" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">the price table (JSON)</text>
+<text x="320.0" y="637.0" font-size="12" text-anchor="middle" fill="#b45309">the price table (JSON)</text>
+<line x1="398.0" y1="649.0" x2="250.0" y2="649.0" stroke-width="1.5" stroke-dasharray="5 4" stroke="#b45309"/>
+<polygon points="242.0,649.0 251.0,644.5 251.0,653.5" fill="#b45309" stroke="none"/>
+<circle cx="385.0" cy="649.0" r="9" fill="#111827" stroke="none"/>
+<text x="385.0" y="652.9" font-size="11" text-anchor="middle" font-weight="bold" fill="#ffffff">10</text>
+<rect x="164.0" y="664.0" width="312.0" height="57" rx="3" stroke-width="1" fill="#ffffff" stroke="#9ca3af"/>
+<text x="174.0" y="676.0" font-size="11.5" text-anchor="start" fill="#111827">401 means the API client has no Secrets scope. Not</text>
+<text x="174.0" y="691.0" font-size="11.5" text-anchor="start" fill="#111827">available means the secret was never created: create</text>
+<text x="174.0" y="706.0" font-size="11.5" text-anchor="start" fill="#111827">it, even as [].</text>
+<text x="292.0" y="746.0" font-size="12" text-anchor="start" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">price the tokens: the secret's row first, else the bundled</text>
+<text x="292.0" y="746.0" font-size="12" text-anchor="start" fill="#111827">price the tokens: the secret's row first, else the bundled</text>
+<text x="292.0" y="761.0" font-size="12" text-anchor="start" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">default table</text>
+<text x="292.0" y="761.0" font-size="12" text-anchor="start" fill="#111827">default table</text>
+<polyline points="242.0,739.0 278.0,739.0 278.0,759.0 250.0,759.0" fill="none" stroke-width="1.5" stroke="#111827"/>
+<polygon points="242.0,759.0 251.0,754.5 251.0,763.5" fill="#111827" stroke="none"/>
+<circle cx="255.0" cy="739.0" r="9" fill="#111827" stroke="none"/>
+<text x="255.0" y="742.9" font-size="11" text-anchor="middle" font-weight="bold" fill="#ffffff">11</text>
+<text x="398.0" y="795.0" font-size="12" text-anchor="middle" stroke-width="4" stroke-linejoin="round" fill="#f6f7f9" stroke="#f6f7f9">complete the job with tokenCostResult (cost and tokens)</text>
+<text x="398.0" y="795.0" font-size="12" text-anchor="middle" fill="#111827">complete the job with tokenCostResult (cost and tokens)</text>
+<line x1="242.0" y1="807.0" x2="546.0" y2="807.0" stroke-width="1.5" stroke="#111827"/>
+<polygon points="554.0,807.0 545.0,802.5 545.0,811.5" fill="#111827" stroke="none"/>
+<circle cx="255.0" cy="807.0" r="9" fill="#111827" stroke="none"/>
+<text x="255.0" y="810.9" font-size="11" text-anchor="middle" font-weight="bold" fill="#ffffff">12</text>
+<text x="8.0" y="24.0" font-size="17" text-anchor="start" font-weight="bold" fill="#111827">How the connector uses the cluster secret</text>
+<line x1="8" y1="46" x2="42" y2="46" stroke-width="1.5" stroke="#111827"/>
+<polygon points="50.0,46.0 41.0,41.5 41.0,50.5" fill="#111827" stroke="none"/>
+<text x="60.0" y="50.0" font-size="11.5" text-anchor="start" fill="#4b5563">request</text>
+<line x1="136" y1="46" x2="170" y2="46" stroke-width="1.5" stroke-dasharray="5 4" stroke="#111827"/>
+<polygon points="178.0,46.0 169.0,41.5 169.0,50.5" fill="#111827" stroke="none"/>
+<text x="188.0" y="50.0" font-size="11.5" text-anchor="start" fill="#4b5563">reply</text>
+<line x1="252" y1="46" x2="286" y2="46" stroke-width="1.5" stroke="#b45309"/>
+<polygon points="294.0,46.0 285.0,41.5 285.0,50.5" fill="#b45309" stroke="none"/>
+<text x="304.0" y="50.0" font-size="11.5" text-anchor="start" fill="#b45309">credential or secret</text>
+<text x="164.0" y="86.0" font-size="10.5" text-anchor="middle" font-weight="bold" letter-spacing="0.12em" fill="#047857">YOUR SIDE</text>
+<rect x="18.0" y="92" width="292.0" height="3" fill="#047857" stroke="none"/>
+<text x="476.0" y="86.0" font-size="10.5" text-anchor="middle" font-weight="bold" letter-spacing="0.12em" fill="#1d4ed8">CAMUNDA SAAS</text>
+<rect x="330.0" y="92" width="292.0" height="3" fill="#1d4ed8" stroke="none"/>
+<rect x="18.0" y="98" width="136" height="46" rx="4" stroke-width="1.5" fill="#ffffff" stroke="#374151"/>
+<rect x="18.0" y="98" width="136" height="4" rx="2" fill="#047857" stroke="none"/>
+<text x="86.0" y="120.0" font-size="12" text-anchor="middle" font-weight="bold" fill="#111827">Developer</text>
+<text x="86.0" y="135.0" font-size="10.5" text-anchor="middle" fill="#4b5563">or admin</text>
+<rect x="174.0" y="98" width="136" height="46" rx="4" stroke-width="1.5" fill="#ffffff" stroke="#374151"/>
+<rect x="174.0" y="98" width="136" height="4" rx="2" fill="#047857" stroke="none"/>
+<text x="242.0" y="120.0" font-size="12" text-anchor="middle" font-weight="bold" fill="#111827">GovernorConnector</text>
+<text x="242.0" y="135.0" font-size="10.5" text-anchor="middle" fill="#4b5563">governor-connector.jar</text>
+<rect x="330.0" y="98" width="136" height="46" rx="4" stroke-width="1.5" fill="#ffffff" stroke="#374151"/>
+<rect x="330.0" y="98" width="136" height="4" rx="2" fill="#1d4ed8" stroke="none"/>
+<text x="398.0" y="120.0" font-size="12" text-anchor="middle" font-weight="bold" fill="#111827">Camunda Console</text>
+<text x="398.0" y="135.0" font-size="10.5" text-anchor="middle" fill="#4b5563">secrets, API clients</text>
+<rect x="486.0" y="98" width="136" height="46" rx="4" stroke-width="1.5" fill="#ffffff" stroke="#374151"/>
+<rect x="486.0" y="98" width="136" height="4" rx="2" fill="#1d4ed8" stroke="none"/>
+<text x="554.0" y="120.0" font-size="12" text-anchor="middle" font-weight="bold" fill="#111827">SaaS cluster</text>
+<text x="554.0" y="135.0" font-size="10.5" text-anchor="middle" fill="#4b5563">Zeebe</text>
+</g>
+<g transform="translate(30 971.00)">
+<line x1="0" y1="0" x2="734" y2="0" stroke-width="1" stroke="#a9b1bd"/>
+<text x="0" y="22" font-size="11" font-weight="bold" letter-spacing="0.12em" fill="#4b5563">KEY POINTS</text>
+<rect x="3" y="35.0" width="8" height="8" fill="#4b5563"/>
+<text x="26" y="44.0" font-size="12.5" fill="#111827">Every arrow into SaaS starts on your side: the runtime calls out, SaaS never calls in.</text>
+<rect x="3" y="61.0" width="8" height="8" fill="#4b5563"/>
+<text x="26" y="70.0" font-size="12.5" fill="#111827">The prices you maintain live only in the Console, as the cluster secret. The BPMN holds just the placeholder.</text>
+<rect x="3" y="87.0" width="8" height="8" fill="#4b5563"/>
+<text x="26" y="96.0" font-size="12.5" fill="#111827">The runtime holds the API client and reads the secret. The connector code never sees Console credentials.</text>
+</g>
+</svg>

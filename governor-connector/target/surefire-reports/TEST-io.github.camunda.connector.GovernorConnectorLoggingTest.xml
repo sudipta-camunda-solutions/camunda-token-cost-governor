@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="io.github.camunda.connector.GovernorConnectorLoggingTest" time="4.31" tests="10" errors="0" skipped="0" failures="0" flakes="0">
+  <properties>
+    <property name="java.specification.version" value="21"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="Cp1252"/>
+    <property name="java.class.path" value="C:\BitBucket\Workspace\Camunda8\camunda-token-cost-governor\governor-connector\target\test-classes;C:\BitBucket\Workspace\Camunda8\camunda-token-cost-governor\governor-connector\target\classes;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-core\8.9.12\connector-core-8.9.12.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-validation\8.9.12\connector-validation-8.9.12.jar;C:\Users\newsa\.m2\repository\jakarta\validation\jakarta.validation-api\3.1.1\jakarta.validation-api-3.1.1.jar;C:\Users\newsa\.m2\repository\org\hibernate\validator\hibernate-validator\9.1.3.Final\hibernate-validator-9.1.3.Final.jar;C:\Users\newsa\.m2\repository\org\jboss\logging\jboss-logging\3.6.3.Final\jboss-logging-3.6.3.Final.jar;C:\Users\newsa\.m2\repository\com\fasterxml\classmate\1.7.1\classmate-1.7.1.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\element-template-generator-annotations\8.9.12\element-template-generator-annotations-8.9.12.jar;C:\Users\newsa\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.22.2\jackson-databind-2.22.2.jar;C:\Users\newsa\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.22\jackson-annotations-2.22.jar;C:\Users\newsa\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.22.2\jackson-core-2.22.2.jar;C:\Users\newsa\.m2\repository\org\slf4j\slf4j-api\2.0.18\slf4j-api-2.0.18.jar;C:\Users\newsa\.m2\repository\io\micrometer\micrometer-core\1.17.1\micrometer-core-1.17.1.jar;C:\Users\newsa\.m2\repository\org\jspecify\jspecify\1.0.1\jspecify-1.0.1.jar;C:\Users\newsa\.m2\repository\io\micrometer\micrometer-commons\1.17.1\micrometer-commons-1.17.1.jar;C:\Users\newsa\.m2\repository\io\micrometer\micrometer-observation\1.17.1\micrometer-observation-1.17.1.jar;C:\Users\newsa\.m2\repository\org\hdrhistogram\HdrHistogram\2.2.2\HdrHistogram-2.2.2.jar;C:\Users\newsa\.m2\repository\io\micrometer\micrometer-registry-prometheus\1.17.1\micrometer-registry-prometheus-1.17.1.jar;C:\Users\newsa\.m2\repository\io\prometheus\prometheus-metrics-core\1.7.0\prometheus-metrics-core-1.7.0.jar;C:\Users\newsa\.m2\repository\io\prometheus\prometheus-metrics-model\1.7.0\prometheus-metrics-model-1.7.0.jar;C:\Users\newsa\.m2\repository\io\prometheus\prometheus-metrics-config\1.7.0\prometheus-metrics-config-1.7.0.jar;C:\Users\newsa\.m2\repository\io\prometheus\prometheus-metrics-tracer-common\1.7.0\prometheus-metrics-tracer-common-1.7.0.jar;C:\Users\newsa\.m2\repository\io\prometheus\prometheus-metrics-exposition-formats\1.7.0\prometheus-metrics-exposition-formats-1.7.0.jar;C:\Users\newsa\.m2\repository\io\prometheus\prometheus-metrics-exposition-textformats\1.7.0\prometheus-metrics-exposition-textformats-1.7.0.jar;C:\Users\newsa\.m2\repository\org\junit\jupiter\junit-jupiter\6.1.2\junit-jupiter-6.1.2.jar;C:\Users\newsa\.m2\repository\org\junit\jupiter\junit-jupiter-api\6.1.2\junit-jupiter-api-6.1.2.jar;C:\Users\newsa\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\newsa\.m2\repository\org\junit\jupiter\junit-jupiter-params\6.1.2\junit-jupiter-params-6.1.2.jar;C:\Users\newsa\.m2\repository\org\junit\jupiter\junit-jupiter-engine\6.1.2\junit-jupiter-engine-6.1.2.jar;C:\Users\newsa\.m2\repository\org\junit\platform\junit-platform-engine\6.1.2\junit-platform-engine-6.1.2.jar;C:\Users\newsa\.m2\repository\org\assertj\assertj-core\3.27.4\assertj-core-3.27.4.jar;C:\Users\newsa\.m2\repository\net\bytebuddy\byte-buddy\1.15.11\byte-buddy-1.15.11.jar;C:\Users\newsa\.m2\repository\org\mockito\mockito-core\5.23.0\mockito-core-5.23.0.jar;C:\Users\newsa\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.7\byte-buddy-agent-1.17.7.jar;C:\Users\newsa\.m2\repository\org\objenesis\objenesis\3.3\objenesis-3.3.jar;C:\Users\newsa\.m2\repository\org\mockito\mockito-junit-jupiter\5.23.0\mockito-junit-jupiter-5.23.0.jar;C:\Users\newsa\.m2\repository\ch\qos\logback\logback-classic\1.5.18\logback-classic-1.5.18.jar;C:\Users\newsa\.m2\repository\ch\qos\logback\logback-core\1.5.18\logback-core-1.5.18.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-runtime-test\8.9.12\connector-runtime-test-8.9.12.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-test\8.9.12\connector-test-8.9.12.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-runtime-core\8.9.12\connector-runtime-core-8.9.12.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-api\1.83.1\grpc-api-1.83.1.jar;C:\Users\newsa\.m2\repository\com\google\errorprone\error_prone_annotations\2.50.0\error_prone_annotations-2.50.0.jar;C:\Users\newsa\.m2\repository\com\google\guava\guava\33.6.0-jre\guava-33.6.0-jre.jar;C:\Users\newsa\.m2\repository\com\google\guava\failureaccess\1.0.3\failureaccess-1.0.3.jar;C:\Users\newsa\.m2\repository\com\google\guava\listenablefuture\9999.0-empty-to-avoid-conflict-with-guava\listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;C:\Users\newsa\.m2\repository\com\google\j2objc\j2objc-annotations\3.1\j2objc-annotations-3.1.jar;C:\Users\newsa\.m2\repository\org\camunda\feel\feel-engine\1.22.1\feel-engine-1.22.1.jar;C:\Users\newsa\.m2\repository\com\lihaoyi\fastparse_2.13\3.1.1\fastparse_2.13-3.1.1.jar;C:\Users\newsa\.m2\repository\com\lihaoyi\sourcecode_2.13\0.4.0\sourcecode_2.13-0.4.0.jar;C:\Users\newsa\.m2\repository\com\lihaoyi\geny_2.13\1.1.0\geny_2.13-1.1.0.jar;C:\Users\newsa\.m2\repository\com\fasterxml\uuid\java-uuid-generator\5.2.0\java-uuid-generator-5.2.0.jar;C:\Users\newsa\.m2\repository\com\fasterxml\jackson\module\jackson-module-scala_2.13\2.22.1\jackson-module-scala_2.13-2.22.1.jar;C:\Users\newsa\.m2\repository\com\thoughtworks\paranamer\paranamer\2.8.3\paranamer-2.8.3.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-feel\8.9.12\connector-feel-8.9.12.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-utils\8.9.12\connector-utils-8.9.12.jar;C:\Users\newsa\.m2\repository\org\scala-lang\scala-library\3.8.4\scala-library-3.8.4.jar;C:\Users\newsa\.m2\repository\org\apache\commons\commons-collections4\4.5.0\commons-collections4-4.5.0.jar;C:\Users\newsa\.m2\repository\jakarta\annotation\jakarta.annotation-api\3.0.0\jakarta.annotation-api-3.0.0.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\http-client\8.9.12\http-client-8.9.12.jar;C:\Users\newsa\.m2\repository\com\google\http-client\google-http-client\2.2.0\google-http-client-2.2.0.jar;C:\Users\newsa\.m2\repository\org\apache\httpcomponents\httpclient\4.5.14\httpclient-4.5.14.jar;C:\Users\newsa\.m2\repository\org\apache\httpcomponents\httpcore\4.4.16\httpcore-4.4.16.jar;C:\Users\newsa\.m2\repository\io\opencensus\opencensus-api\0.31.1\opencensus-api-0.31.1.jar;C:\Users\newsa\.m2\repository\io\opencensus\opencensus-contrib-http-util\0.31.1\opencensus-contrib-http-util-0.31.1.jar;C:\Users\newsa\.m2\repository\com\github\ben-manes\caffeine\caffeine\3.2.4\caffeine-3.2.4.jar;C:\Users\newsa\.m2\repository\com\auth0\java-jwt\4.6.0\java-jwt-4.6.0.jar;C:\Users\newsa\.m2\repository\org\bouncycastle\bcprov-jdk18on\1.85\bcprov-jdk18on-1.85.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-object-mapper\8.9.12\connector-object-mapper-8.9.12.jar;C:\Users\newsa\.m2\repository\com\fasterxml\jackson\datatype\jackson-datatype-jsr310\2.22.2\jackson-datatype-jsr310-2.22.2.jar;C:\Users\newsa\.m2\repository\com\fasterxml\jackson\datatype\jackson-datatype-jdk8\2.22.2\jackson-datatype-jdk8-2.22.2.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\jackson-datatype-feel\8.9.12\jackson-datatype-feel-8.9.12.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\jackson-datatype-document\8.9.12\jackson-datatype-document-8.9.12.jar;C:\Users\newsa\.m2\repository\io\camunda\camunda-process-test-java\8.9.21\camunda-process-test-java-8.9.21.jar;C:\Users\newsa\.m2\repository\io\camunda\camunda-process-test-json-test-cases\8.9.21\camunda-process-test-json-test-cases-8.9.21.jar;C:\Users\newsa\.m2\repository\javax\annotation\javax.annotation-api\1.3.2\javax.annotation-api-1.3.2.jar;C:\Users\newsa\.m2\repository\org\testcontainers\testcontainers\2.0.5\testcontainers-2.0.5.jar;C:\Users\newsa\.m2\repository\org\apache\commons\commons-compress\1.28.0\commons-compress-1.28.0.jar;C:\Users\newsa\.m2\repository\commons-codec\commons-codec\1.19.0\commons-codec-1.19.0.jar;C:\Users\newsa\.m2\repository\org\rnorth\duct-tape\duct-tape\1.0.8\duct-tape-1.0.8.jar;C:\Users\newsa\.m2\repository\org\jetbrains\annotations\17.0.0\annotations-17.0.0.jar;C:\Users\newsa\.m2\repository\com\github\docker-java\docker-java-api\3.7.1\docker-java-api-3.7.1.jar;C:\Users\newsa\.m2\repository\com\github\docker-java\docker-java-transport-zerodep\3.7.1\docker-java-transport-zerodep-3.7.1.jar;C:\Users\newsa\.m2\repository\com\github\docker-java\docker-java-transport\3.7.1\docker-java-transport-3.7.1.jar;C:\Users\newsa\.m2\repository\net\java\dev\jna\jna\5.18.1\jna-5.18.1.jar;C:\Users\newsa\.m2\repository\org\testcontainers\testcontainers-elasticsearch\2.0.5\testcontainers-elasticsearch-2.0.5.jar;C:\Users\newsa\.m2\repository\io\camunda\camunda-client-java\8.9.21\camunda-client-java-8.9.21.jar;C:\Users\newsa\.m2\repository\com\google\code\findbugs\jsr305\3.0.2\jsr305-3.0.2.jar;C:\Users\newsa\.m2\repository\io\camunda\zeebe-gateway-protocol-impl\8.9.21\zeebe-gateway-protocol-impl-8.9.21.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-protobuf\1.79.0\grpc-protobuf-1.79.0.jar;C:\Users\newsa\.m2\repository\com\google\api\grpc\proto-google-common-protos\2.63.2\proto-google-common-protos-2.63.2.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-protobuf-lite\1.79.0\grpc-protobuf-lite-1.79.0.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-stub\1.79.0\grpc-stub-1.79.0.jar;C:\Users\newsa\.m2\repository\org\codehaus\mojo\animal-sniffer-annotations\1.26\animal-sniffer-annotations-1.26.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-core\1.79.0\grpc-core-1.79.0.jar;C:\Users\newsa\.m2\repository\com\google\code\gson\gson\2.12.1\gson-2.12.1.jar;C:\Users\newsa\.m2\repository\com\google\android\annotations\4.1.1.4\annotations-4.1.1.4.jar;C:\Users\newsa\.m2\repository\io\perfmark\perfmark-api\0.27.0\perfmark-api-0.27.0.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-context\1.79.0\grpc-context-1.79.0.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-netty\1.79.0\grpc-netty-1.79.0.jar;C:\Users\newsa\.m2\repository\io\netty\netty-codec-http2\4.1.130.Final\netty-codec-http2-4.1.130.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-codec\4.1.130.Final\netty-codec-4.1.130.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-codec-http\4.1.130.Final\netty-codec-http-4.1.130.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-handler-proxy\4.1.130.Final\netty-handler-proxy-4.1.130.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-codec-socks\4.1.130.Final\netty-codec-socks-4.1.130.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-transport-native-unix-common\4.1.130.Final\netty-transport-native-unix-common-4.1.130.Final.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-util\1.79.0\grpc-util-1.79.0.jar;C:\Users\newsa\.m2\repository\com\google\protobuf\protobuf-java\4.33.6\protobuf-java-4.33.6.jar;C:\Users\newsa\.m2\repository\io\netty\netty-tcnative-boringssl-static\2.0.84.Final\netty-tcnative-boringssl-static-2.0.84.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-tcnative-classes\2.0.84.Final\netty-tcnative-classes-2.0.84.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-tcnative-boringssl-static\2.0.84.Final\netty-tcnative-boringssl-static-2.0.84.Final-linux-x86_64.jar;C:\Users\newsa\.m2\repository\io\netty\netty-tcnative-boringssl-static\2.0.84.Final\netty-tcnative-boringssl-static-2.0.84.Final-linux-aarch_64.jar;C:\Users\newsa\.m2\repository\io\netty\netty-tcnative-boringssl-static\2.0.84.Final\netty-tcnative-boringssl-static-2.0.84.Final-osx-x86_64.jar;C:\Users\newsa\.m2\repository\io\netty\netty-tcnative-boringssl-static\2.0.84.Final\netty-tcnative-boringssl-static-2.0.84.Final-osx-aarch_64.jar;C:\Users\newsa\.m2\repository\io\netty\netty-tcnative-boringssl-static\2.0.84.Final\netty-tcnative-boringssl-static-2.0.84.Final-windows-x86_64.jar;C:\Users\newsa\.m2\repository\io\netty\netty-handler\4.2.18.Final\netty-handler-4.2.18.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-resolver\4.2.18.Final\netty-resolver-4.2.18.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-buffer\4.2.18.Final\netty-buffer-4.2.18.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-transport\4.2.18.Final\netty-transport-4.2.18.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-codec-base\4.2.18.Final\netty-codec-base-4.2.18.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-common\4.2.18.Final\netty-common-4.2.18.Final.jar;C:\Users\newsa\.m2\repository\com\fasterxml\jackson\dataformat\jackson-dataformat-yaml\2.21.6\jackson-dataformat-yaml-2.21.6.jar;C:\Users\newsa\.m2\repository\org\yaml\snakeyaml\2.5\snakeyaml-2.5.jar;C:\Users\newsa\.m2\repository\io\camunda\zeebe-client-java\8.9.21\zeebe-client-java-8.9.21.jar;C:\Users\newsa\.m2\repository\org\awaitility\awaitility\4.3.0\awaitility-4.3.0.jar;C:\Users\newsa\.m2\repository\org\hamcrest\hamcrest\2.1\hamcrest-2.1.jar;C:\Users\newsa\.m2\repository\org\apache\httpcomponents\client5\httpclient5\5.6.4\httpclient5-5.6.4.jar;C:\Users\newsa\.m2\repository\org\apache\httpcomponents\core5\httpcore5-h2\5.4.3\httpcore5-h2-5.4.3.jar;C:\Users\newsa\.m2\repository\org\apache\httpcomponents\core5\httpcore5\5.4.3\httpcore5-5.4.3.jar;C:\Users\newsa\.m2\repository\org\apache\commons\commons-lang3\3.20.0\commons-lang3-3.20.0.jar;C:\Users\newsa\.m2\repository\commons-io\commons-io\2.21.0\commons-io-2.21.0.jar;C:\Users\newsa\.m2\repository\io\camunda\zeebe-bpmn-model\8.9.21\zeebe-bpmn-model-8.9.21.jar;C:\Users\newsa\.m2\repository\org\camunda\bpm\model\camunda-dmn-model\7.24.0\camunda-dmn-model-7.24.0.jar;C:\Users\newsa\.m2\repository\org\camunda\bpm\model\camunda-xml-model\7.24.0\camunda-xml-model-7.24.0.jar;C:\Users\newsa\.m2\repository\org\junit\platform\junit-platform-commons\6.1.2\junit-platform-commons-6.1.2.jar;C:\Users\newsa\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar"/>
+    <property name="java.vm.vendor" value="Eclipse Adoptium"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
+    <property name="java.vendor.url" value="https://adoptium.net/"/>
+    <property name="user.timezone" value="Asia/Calcutta"/>
+    <property name="os.name" value="Windows 11"/>
+    <property name="java.vm.specification.version" value="21"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="IN"/>
+    <property name="sun.boot.library.path" value="C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot\bin"/>
+    <property name="sun.java.command" value="C:\Users\newsa\AppData\Local\Temp\surefire9350983149494298906\surefirebooter-20260925155057490_3.jar C:\Users\newsa\AppData\Local\Temp\surefire9350983149494298906 2026-09-25T15-50-57_302-jvmRun1 surefire-20260925155057490_1tmp surefire_0-20260925155057490_2tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="C:\BitBucket\Workspace\Camunda8\camunda-token-cost-governor\governor-connector\target\test-classes;C:\BitBucket\Workspace\Camunda8\camunda-token-cost-governor\governor-connector\target\classes;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-core\8.9.12\connector-core-8.9.12.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-validation\8.9.12\connector-validation-8.9.12.jar;C:\Users\newsa\.m2\repository\jakarta\validation\jakarta.validation-api\3.1.1\jakarta.validation-api-3.1.1.jar;C:\Users\newsa\.m2\repository\org\hibernate\validator\hibernate-validator\9.1.3.Final\hibernate-validator-9.1.3.Final.jar;C:\Users\newsa\.m2\repository\org\jboss\logging\jboss-logging\3.6.3.Final\jboss-logging-3.6.3.Final.jar;C:\Users\newsa\.m2\repository\com\fasterxml\classmate\1.7.1\classmate-1.7.1.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\element-template-generator-annotations\8.9.12\element-template-generator-annotations-8.9.12.jar;C:\Users\newsa\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.22.2\jackson-databind-2.22.2.jar;C:\Users\newsa\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.22\jackson-annotations-2.22.jar;C:\Users\newsa\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.22.2\jackson-core-2.22.2.jar;C:\Users\newsa\.m2\repository\org\slf4j\slf4j-api\2.0.18\slf4j-api-2.0.18.jar;C:\Users\newsa\.m2\repository\io\micrometer\micrometer-core\1.17.1\micrometer-core-1.17.1.jar;C:\Users\newsa\.m2\repository\org\jspecify\jspecify\1.0.1\jspecify-1.0.1.jar;C:\Users\newsa\.m2\repository\io\micrometer\micrometer-commons\1.17.1\micrometer-commons-1.17.1.jar;C:\Users\newsa\.m2\repository\io\micrometer\micrometer-observation\1.17.1\micrometer-observation-1.17.1.jar;C:\Users\newsa\.m2\repository\org\hdrhistogram\HdrHistogram\2.2.2\HdrHistogram-2.2.2.jar;C:\Users\newsa\.m2\repository\io\micrometer\micrometer-registry-prometheus\1.17.1\micrometer-registry-prometheus-1.17.1.jar;C:\Users\newsa\.m2\repository\io\prometheus\prometheus-metrics-core\1.7.0\prometheus-metrics-core-1.7.0.jar;C:\Users\newsa\.m2\repository\io\prometheus\prometheus-metrics-model\1.7.0\prometheus-metrics-model-1.7.0.jar;C:\Users\newsa\.m2\repository\io\prometheus\prometheus-metrics-config\1.7.0\prometheus-metrics-config-1.7.0.jar;C:\Users\newsa\.m2\repository\io\prometheus\prometheus-metrics-tracer-common\1.7.0\prometheus-metrics-tracer-common-1.7.0.jar;C:\Users\newsa\.m2\repository\io\prometheus\prometheus-metrics-exposition-formats\1.7.0\prometheus-metrics-exposition-formats-1.7.0.jar;C:\Users\newsa\.m2\repository\io\prometheus\prometheus-metrics-exposition-textformats\1.7.0\prometheus-metrics-exposition-textformats-1.7.0.jar;C:\Users\newsa\.m2\repository\org\junit\jupiter\junit-jupiter\6.1.2\junit-jupiter-6.1.2.jar;C:\Users\newsa\.m2\repository\org\junit\jupiter\junit-jupiter-api\6.1.2\junit-jupiter-api-6.1.2.jar;C:\Users\newsa\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\newsa\.m2\repository\org\junit\jupiter\junit-jupiter-params\6.1.2\junit-jupiter-params-6.1.2.jar;C:\Users\newsa\.m2\repository\org\junit\jupiter\junit-jupiter-engine\6.1.2\junit-jupiter-engine-6.1.2.jar;C:\Users\newsa\.m2\repository\org\junit\platform\junit-platform-engine\6.1.2\junit-platform-engine-6.1.2.jar;C:\Users\newsa\.m2\repository\org\assertj\assertj-core\3.27.4\assertj-core-3.27.4.jar;C:\Users\newsa\.m2\repository\net\bytebuddy\byte-buddy\1.15.11\byte-buddy-1.15.11.jar;C:\Users\newsa\.m2\repository\org\mockito\mockito-core\5.23.0\mockito-core-5.23.0.jar;C:\Users\newsa\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.7\byte-buddy-agent-1.17.7.jar;C:\Users\newsa\.m2\repository\org\objenesis\objenesis\3.3\objenesis-3.3.jar;C:\Users\newsa\.m2\repository\org\mockito\mockito-junit-jupiter\5.23.0\mockito-junit-jupiter-5.23.0.jar;C:\Users\newsa\.m2\repository\ch\qos\logback\logback-classic\1.5.18\logback-classic-1.5.18.jar;C:\Users\newsa\.m2\repository\ch\qos\logback\logback-core\1.5.18\logback-core-1.5.18.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-runtime-test\8.9.12\connector-runtime-test-8.9.12.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-test\8.9.12\connector-test-8.9.12.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-runtime-core\8.9.12\connector-runtime-core-8.9.12.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-api\1.83.1\grpc-api-1.83.1.jar;C:\Users\newsa\.m2\repository\com\google\errorprone\error_prone_annotations\2.50.0\error_prone_annotations-2.50.0.jar;C:\Users\newsa\.m2\repository\com\google\guava\guava\33.6.0-jre\guava-33.6.0-jre.jar;C:\Users\newsa\.m2\repository\com\google\guava\failureaccess\1.0.3\failureaccess-1.0.3.jar;C:\Users\newsa\.m2\repository\com\google\guava\listenablefuture\9999.0-empty-to-avoid-conflict-with-guava\listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar;C:\Users\newsa\.m2\repository\com\google\j2objc\j2objc-annotations\3.1\j2objc-annotations-3.1.jar;C:\Users\newsa\.m2\repository\org\camunda\feel\feel-engine\1.22.1\feel-engine-1.22.1.jar;C:\Users\newsa\.m2\repository\com\lihaoyi\fastparse_2.13\3.1.1\fastparse_2.13-3.1.1.jar;C:\Users\newsa\.m2\repository\com\lihaoyi\sourcecode_2.13\0.4.0\sourcecode_2.13-0.4.0.jar;C:\Users\newsa\.m2\repository\com\lihaoyi\geny_2.13\1.1.0\geny_2.13-1.1.0.jar;C:\Users\newsa\.m2\repository\com\fasterxml\uuid\java-uuid-generator\5.2.0\java-uuid-generator-5.2.0.jar;C:\Users\newsa\.m2\repository\com\fasterxml\jackson\module\jackson-module-scala_2.13\2.22.1\jackson-module-scala_2.13-2.22.1.jar;C:\Users\newsa\.m2\repository\com\thoughtworks\paranamer\paranamer\2.8.3\paranamer-2.8.3.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-feel\8.9.12\connector-feel-8.9.12.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-utils\8.9.12\connector-utils-8.9.12.jar;C:\Users\newsa\.m2\repository\org\scala-lang\scala-library\3.8.4\scala-library-3.8.4.jar;C:\Users\newsa\.m2\repository\org\apache\commons\commons-collections4\4.5.0\commons-collections4-4.5.0.jar;C:\Users\newsa\.m2\repository\jakarta\annotation\jakarta.annotation-api\3.0.0\jakarta.annotation-api-3.0.0.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\http-client\8.9.12\http-client-8.9.12.jar;C:\Users\newsa\.m2\repository\com\google\http-client\google-http-client\2.2.0\google-http-client-2.2.0.jar;C:\Users\newsa\.m2\repository\org\apache\httpcomponents\httpclient\4.5.14\httpclient-4.5.14.jar;C:\Users\newsa\.m2\repository\org\apache\httpcomponents\httpcore\4.4.16\httpcore-4.4.16.jar;C:\Users\newsa\.m2\repository\io\opencensus\opencensus-api\0.31.1\opencensus-api-0.31.1.jar;C:\Users\newsa\.m2\repository\io\opencensus\opencensus-contrib-http-util\0.31.1\opencensus-contrib-http-util-0.31.1.jar;C:\Users\newsa\.m2\repository\com\github\ben-manes\caffeine\caffeine\3.2.4\caffeine-3.2.4.jar;C:\Users\newsa\.m2\repository\com\auth0\java-jwt\4.6.0\java-jwt-4.6.0.jar;C:\Users\newsa\.m2\repository\org\bouncycastle\bcprov-jdk18on\1.85\bcprov-jdk18on-1.85.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\connector-object-mapper\8.9.12\connector-object-mapper-8.9.12.jar;C:\Users\newsa\.m2\repository\com\fasterxml\jackson\datatype\jackson-datatype-jsr310\2.22.2\jackson-datatype-jsr310-2.22.2.jar;C:\Users\newsa\.m2\repository\com\fasterxml\jackson\datatype\jackson-datatype-jdk8\2.22.2\jackson-datatype-jdk8-2.22.2.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\jackson-datatype-feel\8.9.12\jackson-datatype-feel-8.9.12.jar;C:\Users\newsa\.m2\repository\io\camunda\connector\jackson-datatype-document\8.9.12\jackson-datatype-document-8.9.12.jar;C:\Users\newsa\.m2\repository\io\camunda\camunda-process-test-java\8.9.21\camunda-process-test-java-8.9.21.jar;C:\Users\newsa\.m2\repository\io\camunda\camunda-process-test-json-test-cases\8.9.21\camunda-process-test-json-test-cases-8.9.21.jar;C:\Users\newsa\.m2\repository\javax\annotation\javax.annotation-api\1.3.2\javax.annotation-api-1.3.2.jar;C:\Users\newsa\.m2\repository\org\testcontainers\testcontainers\2.0.5\testcontainers-2.0.5.jar;C:\Users\newsa\.m2\repository\org\apache\commons\commons-compress\1.28.0\commons-compress-1.28.0.jar;C:\Users\newsa\.m2\repository\commons-codec\commons-codec\1.19.0\commons-codec-1.19.0.jar;C:\Users\newsa\.m2\repository\org\rnorth\duct-tape\duct-tape\1.0.8\duct-tape-1.0.8.jar;C:\Users\newsa\.m2\repository\org\jetbrains\annotations\17.0.0\annotations-17.0.0.jar;C:\Users\newsa\.m2\repository\com\github\docker-java\docker-java-api\3.7.1\docker-java-api-3.7.1.jar;C:\Users\newsa\.m2\repository\com\github\docker-java\docker-java-transport-zerodep\3.7.1\docker-java-transport-zerodep-3.7.1.jar;C:\Users\newsa\.m2\repository\com\github\docker-java\docker-java-transport\3.7.1\docker-java-transport-3.7.1.jar;C:\Users\newsa\.m2\repository\net\java\dev\jna\jna\5.18.1\jna-5.18.1.jar;C:\Users\newsa\.m2\repository\org\testcontainers\testcontainers-elasticsearch\2.0.5\testcontainers-elasticsearch-2.0.5.jar;C:\Users\newsa\.m2\repository\io\camunda\camunda-client-java\8.9.21\camunda-client-java-8.9.21.jar;C:\Users\newsa\.m2\repository\com\google\code\findbugs\jsr305\3.0.2\jsr305-3.0.2.jar;C:\Users\newsa\.m2\repository\io\camunda\zeebe-gateway-protocol-impl\8.9.21\zeebe-gateway-protocol-impl-8.9.21.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-protobuf\1.79.0\grpc-protobuf-1.79.0.jar;C:\Users\newsa\.m2\repository\com\google\api\grpc\proto-google-common-protos\2.63.2\proto-google-common-protos-2.63.2.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-protobuf-lite\1.79.0\grpc-protobuf-lite-1.79.0.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-stub\1.79.0\grpc-stub-1.79.0.jar;C:\Users\newsa\.m2\repository\org\codehaus\mojo\animal-sniffer-annotations\1.26\animal-sniffer-annotations-1.26.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-core\1.79.0\grpc-core-1.79.0.jar;C:\Users\newsa\.m2\repository\com\google\code\gson\gson\2.12.1\gson-2.12.1.jar;C:\Users\newsa\.m2\repository\com\google\android\annotations\4.1.1.4\annotations-4.1.1.4.jar;C:\Users\newsa\.m2\repository\io\perfmark\perfmark-api\0.27.0\perfmark-api-0.27.0.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-context\1.79.0\grpc-context-1.79.0.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-netty\1.79.0\grpc-netty-1.79.0.jar;C:\Users\newsa\.m2\repository\io\netty\netty-codec-http2\4.1.130.Final\netty-codec-http2-4.1.130.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-codec\4.1.130.Final\netty-codec-4.1.130.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-codec-http\4.1.130.Final\netty-codec-http-4.1.130.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-handler-proxy\4.1.130.Final\netty-handler-proxy-4.1.130.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-codec-socks\4.1.130.Final\netty-codec-socks-4.1.130.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-transport-native-unix-common\4.1.130.Final\netty-transport-native-unix-common-4.1.130.Final.jar;C:\Users\newsa\.m2\repository\io\grpc\grpc-util\1.79.0\grpc-util-1.79.0.jar;C:\Users\newsa\.m2\repository\com\google\protobuf\protobuf-java\4.33.6\protobuf-java-4.33.6.jar;C:\Users\newsa\.m2\repository\io\netty\netty-tcnative-boringssl-static\2.0.84.Final\netty-tcnative-boringssl-static-2.0.84.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-tcnative-classes\2.0.84.Final\netty-tcnative-classes-2.0.84.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-tcnative-boringssl-static\2.0.84.Final\netty-tcnative-boringssl-static-2.0.84.Final-linux-x86_64.jar;C:\Users\newsa\.m2\repository\io\netty\netty-tcnative-boringssl-static\2.0.84.Final\netty-tcnative-boringssl-static-2.0.84.Final-linux-aarch_64.jar;C:\Users\newsa\.m2\repository\io\netty\netty-tcnative-boringssl-static\2.0.84.Final\netty-tcnative-boringssl-static-2.0.84.Final-osx-x86_64.jar;C:\Users\newsa\.m2\repository\io\netty\netty-tcnative-boringssl-static\2.0.84.Final\netty-tcnative-boringssl-static-2.0.84.Final-osx-aarch_64.jar;C:\Users\newsa\.m2\repository\io\netty\netty-tcnative-boringssl-static\2.0.84.Final\netty-tcnative-boringssl-static-2.0.84.Final-windows-x86_64.jar;C:\Users\newsa\.m2\repository\io\netty\netty-handler\4.2.18.Final\netty-handler-4.2.18.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-resolver\4.2.18.Final\netty-resolver-4.2.18.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-buffer\4.2.18.Final\netty-buffer-4.2.18.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-transport\4.2.18.Final\netty-transport-4.2.18.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-codec-base\4.2.18.Final\netty-codec-base-4.2.18.Final.jar;C:\Users\newsa\.m2\repository\io\netty\netty-common\4.2.18.Final\netty-common-4.2.18.Final.jar;C:\Users\newsa\.m2\repository\com\fasterxml\jackson\dataformat\jackson-dataformat-yaml\2.21.6\jackson-dataformat-yaml-2.21.6.jar;C:\Users\newsa\.m2\repository\org\yaml\snakeyaml\2.5\snakeyaml-2.5.jar;C:\Users\newsa\.m2\repository\io\camunda\zeebe-client-java\8.9.21\zeebe-client-java-8.9.21.jar;C:\Users\newsa\.m2\repository\org\awaitility\awaitility\4.3.0\awaitility-4.3.0.jar;C:\Users\newsa\.m2\repository\org\hamcrest\hamcrest\2.1\hamcrest-2.1.jar;C:\Users\newsa\.m2\repository\org\apache\httpcomponents\client5\httpclient5\5.6.4\httpclient5-5.6.4.jar;C:\Users\newsa\.m2\repository\org\apache\httpcomponents\core5\httpcore5-h2\5.4.3\httpcore5-h2-5.4.3.jar;C:\Users\newsa\.m2\repository\org\apache\httpcomponents\core5\httpcore5\5.4.3\httpcore5-5.4.3.jar;C:\Users\newsa\.m2\repository\org\apache\commons\commons-lang3\3.20.0\commons-lang3-3.20.0.jar;C:\Users\newsa\.m2\repository\commons-io\commons-io\2.21.0\commons-io-2.21.0.jar;C:\Users\newsa\.m2\repository\io\camunda\zeebe-bpmn-model\8.9.21\zeebe-bpmn-model-8.9.21.jar;C:\Users\newsa\.m2\repository\org\camunda\bpm\model\camunda-dmn-model\7.24.0\camunda-dmn-model-7.24.0.jar;C:\Users\newsa\.m2\repository\org\camunda\bpm\model\camunda-xml-model\7.24.0\camunda-xml-model-7.24.0.jar;C:\Users\newsa\.m2\repository\org\junit\platform\junit-platform-commons\6.1.2\junit-platform-commons-6.1.2.jar;C:\Users\newsa\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="C:\Users\newsa"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2026-08-18"/>
+    <property name="java.home" value="C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot"/>
+    <property name="file.separator" value="\"/>
+    <property name="basedir" value="C:\BitBucket\Workspace\Camunda8\camunda-token-cost-governor\governor-connector"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="surefire.real.class.path" value="C:\Users\newsa\AppData\Local\Temp\surefire9350983149494298906\surefirebooter-20260925155057490_3.jar"/>
+    <property name="user.script" value=""/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="21.0.12.1+1-LTS"/>
+    <property name="user.name" value="newsa"/>
+    <property name="stdout.encoding" value="Cp1252"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="java.vendor.version" value="Temurin-21.0.12.1+1"/>
+    <property name="localRepository" value="C:\Users\newsa\.m2\repository"/>
+    <property name="java.vendor.url.bug" value="https://github.com/adoptium/adoptium-support/issues"/>
+    <property name="java.io.tmpdir" value="C:\Users\newsa\AppData\Local\Temp\"/>
+    <property name="java.version" value="21.0.12.1"/>
+    <property name="user.dir" value="C:\BitBucket\Workspace\Camunda8\camunda-token-cost-governor\governor-connector"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="native.encoding" value="Cp1252"/>
+    <property name="java.library.path" value="C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;c:\Users\newsa\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;c:\Users\newsa\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\TortoiseGit\bin;C:\Program Files\nodejs\;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Git\cmd;C:\Users\newsa\AppData\Local\Programs\Python\Launcher\;C:\Users\newsa\AppData\Local\Microsoft\WindowsApps;C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2025.2.6.1\bin;C:\Users\newsa\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\newsa\AppData\Roaming\npm;C:\SW\apache-maven-3.9.14-bin\apache-maven-3.9.14\bin;C:\Program Files\JetBrains\PyCharm 2026.1\bin;C:\Program Files\PostgreSQL\18\bin;C:\Users\newsa\.local\bin\;C:\SW\ngrok;C:\Users\newsa\AppData\Local\Python\bin;C:\Users\newsa\AppData\Local\Python\pythoncore-3.14-64\Scripts;;C:\Users\newsa\AppData\Local\Programs\Ollama;C:\Users\newsa\AppData\Local\Microsoft\WinGet\Packages\Helm.Helm_Microsoft.Winget.Source_8wekyb3d8bbwe\windows-amd64;;c:\Users\newsa\.vscode\extensions\ms-python.debugpy-2026.6.0-win32-x64\bundled\scripts\noConfigScriptsc:\Users\newsa\.vscode\extensions\vscjava.vscode-java-debug-0.59.0\bundled\scripts\noConfigScripts;."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="stderr.encoding" value="Cp1252"/>
+    <property name="java.vendor" value="Eclipse Adoptium"/>
+    <property name="java.vm.version" value="21.0.12.1+1-LTS"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="65.0"/>
+  </properties>
+  <testcase name="startupLogsDefaultTableSize" classname="io.github.camunda.connector.GovernorConnectorLoggingTest" time="0.397">
+    <system-out><![CDATA[15:50:59.419 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 0 rows
+15:50:59.512 INFO  i.g.c.c.GovernorConnector - Token Cost Reporter loaded, default price table rows=0
+15:50:59.527 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 1 rows
+15:50:59.528 INFO  i.g.c.c.GovernorConnector - Token Cost Reporter loaded, default price table rows=1
+]]></system-out>
+  </testcase>
+  <testcase name="secretNotAvailable_logsErrorWithCreateTheSecretHint" classname="io.github.camunda.connector.GovernorConnectorLoggingTest" time="1.326">
+    <system-out><![CDATA[15:50:59.595 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 0 rows
+15:50:59.596 INFO  i.g.c.c.GovernorConnector - Token Cost Reporter loaded, default price table rows=0
+15:51:00.890 ERROR i.g.c.c.GovernorConnector - Token cost execution failed: io.github.camunda.connector.GovernorConnectorLoggingTest$SecretNotAvailableException: Secret with name 'GOVERNOR_PRICE_TABLE' is not available
+HINT: A secret this element references is not available to the runtime. Create it in Camunda Console (for GOVERNOR_PRICE_TABLE even as an empty array []), and make sure a runtime you host yourself can read Console secrets: API client with the 'Secrets' scope and CAMUNDA_CONNECTOR_SECRETPROVIDER_CONSOLE_ENABLED=true.
+15:51:00.893 DEBUG i.g.c.c.GovernorConnector - Token cost execution failure stack trace
+io.github.camunda.connector.GovernorConnectorLoggingTest$SecretNotAvailableException: Secret with name 'GOVERNOR_PRICE_TABLE' is not available
+	at io.github.camunda.connector.GovernorConnector.compute(GovernorConnector.java:117)
+	at io.github.camunda.connector.GovernorConnector.execute(GovernorConnector.java:74)
+	at io.github.camunda.connector.GovernorConnectorLoggingTest.lambda$secretNotAvailable_logsErrorWithCreateTheSecretHint$15(GovernorConnectorLoggingTest.java:204)
+	at org.assertj.core.api.ThrowableAssert.catchThrowable(ThrowableAssert.java:63)
+	at org.assertj.core.api.AssertionsForClassTypes.catchThrowable(AssertionsForClassTypes.java:905)
+	at org.assertj.core.api.Assertions.catchThrowable(Assertions.java:1473)
+	at org.assertj.core.api.Assertions.assertThatThrownBy(Assertions.java:1316)
+	at io.github.camunda.connector.GovernorConnectorLoggingTest.secretNotAvailable_logsErrorWithCreateTheSecretHint(GovernorConnectorLoggingTest.java:204)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:700)
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:528)
+	at org.junit.jupiter.engine.support.MethodReflectionUtils.invoke(MethodReflectionUtils.java:53)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:61)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:124)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:163)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:148)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:124)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:105)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:99)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:66)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:47)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:39)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:104)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:98)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invokeVoid(InterceptingExecutableInvoker.java:71)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$0(TestMethodTestDescriptor.java:219)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:215)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:157)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:70)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:176)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:139)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:139)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:139)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:36)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:52)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.executeEngine(EngineExecutionOrchestrator.java:256)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.failOrExecuteEngine(EngineExecutionOrchestrator.java:228)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:189)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:109)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:66)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:168)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:65)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:137)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:126)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:71)
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$2(InterceptingLauncher.java:66)
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:65)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:71)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:125)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithCancellationToken(LauncherAdapter.java:68)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:54)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:283)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:253)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:221)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:394)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:181)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:530)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:518)
+]]></system-out>
+    <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\newsa\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.7\byte-buddy-agent-1.17.7.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+  </testcase>
+  <testcase name="blankSecret_isNotAWarning" classname="io.github.camunda.connector.GovernorConnectorLoggingTest" time="1.989">
+    <system-out><![CDATA[15:51:00.915 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 0 rows
+15:51:00.915 INFO  i.g.c.c.GovernorConnector - Token Cost Reporter loaded, default price table rows=0
+15:51:00.920 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 1 rows
+15:51:00.920 INFO  i.g.c.c.GovernorConnector - Token Cost Reporter loaded, default price table rows=1
+15:51:02.888 DEBUG i.g.c.c.GovernorConnector - Request: provider=anthropic model=claude-sonnet-5 agent='claims-triage' inputTokens=1000 outputTokens=1000 priceTableSecret=blank
+15:51:02.888 DEBUG i.g.c.c.pricing.PriceTable - GOVERNOR_PRICE_TABLE is blank - using the bundled default table
+15:51:02.888 DEBUG i.g.c.c.GovernorConnector - Price found in DEFAULT_TABLE: inputPer1kMicros=3000 outputPer1kMicros=15000 currency=USD
+15:51:02.888 DEBUG i.g.c.c.m.TokenCostMetrics - Recording governor_* counters on a non-composite registry: SimpleMeterRegistry
+15:51:02.888 DEBUG i.g.c.c.m.TokenCostMetrics - Recorded governor_* counters: provider=anthropic model=claude-sonnet-5 agent=claims-triage +calls=1 +inputTokens=1000 +outputTokens=1000 +costUsd=0.018
+15:51:02.904 INFO  i.g.c.c.GovernorConnector - Token cost: provider=anthropic model=claude-sonnet-5 agent=claims-triage inputTokens=1000 outputTokens=1000 totalTokens=2000 costMicros=18000 costUsd=0.018000 priceSource=DEFAULT_TABLE elapsedMs=160
+]]></system-out>
+  </testcase>
+  <testcase name="consoleSecretAuthFailure_logsErrorWithSecretsScopeHint_andRethrowsUnchanged" classname="io.github.camunda.connector.GovernorConnectorLoggingTest" time="0.002">
+    <system-out><![CDATA[15:51:02.910 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 0 rows
+15:51:02.910 INFO  i.g.c.c.GovernorConnector - Token Cost Reporter loaded, default price table rows=0
+15:51:02.910 ERROR i.g.c.c.GovernorConnector - Token cost execution failed: java.lang.RuntimeException: outer wrapper
+HINT: The runtime could not authenticate to Camunda Console to read cluster secrets (token request for audience secrets.camunda.io was refused). The API client behind CAMUNDA_CLIENT_ID/CAMUNDA_CLIENT_SECRET most likely lacks the 'Secrets' scope, or its credentials are wrong. Create a client with the Secrets scope in Camunda Console, or stop using Console secrets by unsetting CAMUNDA_CONNECTOR_SECRETPROVIDER_CONSOLE_ENABLED and providing GOVERNOR_PRICE_TABLE as an environment variable.
+15:51:02.910 DEBUG i.g.c.c.GovernorConnector - Token cost execution failure stack trace
+java.lang.RuntimeException: outer wrapper
+	at io.github.camunda.connector.GovernorConnector.compute(GovernorConnector.java:117)
+	at io.github.camunda.connector.GovernorConnector.execute(GovernorConnector.java:74)
+	at io.github.camunda.connector.GovernorConnectorLoggingTest.lambda$consoleSecretAuthFailure_logsErrorWithSecretsScopeHint_andRethrowsUnchanged$13(GovernorConnectorLoggingTest.java:193)
+	at org.assertj.core.api.ThrowableAssert.catchThrowable(ThrowableAssert.java:63)
+	at org.assertj.core.api.AssertionsForClassTypes.catchThrowable(AssertionsForClassTypes.java:905)
+	at org.assertj.core.api.Assertions.catchThrowable(Assertions.java:1473)
+	at org.assertj.core.api.Assertions.assertThatThrownBy(Assertions.java:1316)
+	at io.github.camunda.connector.GovernorConnectorLoggingTest.consoleSecretAuthFailure_logsErrorWithSecretsScopeHint_andRethrowsUnchanged(GovernorConnectorLoggingTest.java:193)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:700)
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:528)
+	at org.junit.jupiter.engine.support.MethodReflectionUtils.invoke(MethodReflectionUtils.java:53)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:61)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:124)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:163)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:148)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:124)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:105)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:99)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:66)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:47)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:39)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:104)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:98)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invokeVoid(InterceptingExecutableInvoker.java:71)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$0(TestMethodTestDescriptor.java:219)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:215)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:157)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:70)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:176)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:139)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:139)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:139)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:36)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:52)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.executeEngine(EngineExecutionOrchestrator.java:256)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.failOrExecuteEngine(EngineExecutionOrchestrator.java:228)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:189)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:109)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:66)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:168)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:65)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:137)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:126)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:71)
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$2(InterceptingLauncher.java:66)
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:65)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:71)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:125)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithCancellationToken(LauncherAdapter.java:68)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:54)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:283)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:253)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:221)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:394)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:181)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:530)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:518)
+Caused by: java.lang.RuntimeException: Token retrieval failed from: https://login.cloud.camunda.io/oauth/token
+Response code: 401
+Audience: secrets.camunda.io
+	at io.github.camunda.connector.GovernorConnectorLoggingTest.consoleSecretAuthFailure_logsErrorWithSecretsScopeHint_andRethrowsUnchanged(GovernorConnectorLoggingTest.java:188)
+	... 81 common frames omitted
+]]></system-out>
+  </testcase>
+  <testcase name="debug_explainsThePriceDecisionWithoutEchoingTheSecret" classname="io.github.camunda.connector.GovernorConnectorLoggingTest" time="0.064">
+    <system-out><![CDATA[15:51:02.921 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 0 rows
+15:51:02.922 INFO  i.g.c.c.GovernorConnector - Token Cost Reporter loaded, default price table rows=0
+15:51:02.974 DEBUG i.g.c.c.GovernorConnector - Request: provider=anthropic model=claude-sonnet-5 agent='claims-triage' inputTokens=1000 outputTokens=1000 priceTableSecret=133 chars
+15:51:02.974 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 1 rows
+15:51:02.974 DEBUG i.g.c.c.GovernorConnector - Price found in CLUSTER_SECRET: inputPer1kMicros=3000 outputPer1kMicros=15000 currency=USD
+15:51:02.974 DEBUG i.g.c.c.m.TokenCostMetrics - Recording governor_* counters on a non-composite registry: SimpleMeterRegistry
+15:51:02.974 DEBUG i.g.c.c.m.TokenCostMetrics - Recorded governor_* counters: provider=anthropic model=claude-sonnet-5 agent=claims-triage +calls=1 +inputTokens=1000 +outputTokens=1000 +costUsd=0.018
+15:51:02.974 INFO  i.g.c.c.GovernorConnector - Token cost: provider=anthropic model=claude-sonnet-5 agent=claims-triage inputTokens=1000 outputTokens=1000 totalTokens=2000 costMicros=18000 costUsd=0.018000 priceSource=CLUSTER_SECRET elapsedMs=22
+]]></system-out>
+  </testcase>
+  <testcase name="unrecognisedFailure_logsErrorWithoutAHint_andRethrowsUnchanged" classname="io.github.camunda.connector.GovernorConnectorLoggingTest" time="0.014">
+    <system-out><![CDATA[15:51:02.982 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 0 rows
+15:51:02.982 INFO  i.g.c.c.GovernorConnector - Token Cost Reporter loaded, default price table rows=0
+15:51:02.982 ERROR i.g.c.c.GovernorConnector - Token cost execution failed: java.lang.IllegalStateException: something else entirely
+15:51:02.982 DEBUG i.g.c.c.GovernorConnector - Token cost execution failure stack trace
+java.lang.IllegalStateException: something else entirely
+	at io.github.camunda.connector.GovernorConnector.compute(GovernorConnector.java:117)
+	at io.github.camunda.connector.GovernorConnector.execute(GovernorConnector.java:74)
+	at io.github.camunda.connector.GovernorConnectorLoggingTest.lambda$unrecognisedFailure_logsErrorWithoutAHint_andRethrowsUnchanged$17(GovernorConnectorLoggingTest.java:215)
+	at org.assertj.core.api.ThrowableAssert.catchThrowable(ThrowableAssert.java:63)
+	at org.assertj.core.api.AssertionsForClassTypes.catchThrowable(AssertionsForClassTypes.java:905)
+	at org.assertj.core.api.Assertions.catchThrowable(Assertions.java:1473)
+	at org.assertj.core.api.Assertions.assertThatThrownBy(Assertions.java:1316)
+	at io.github.camunda.connector.GovernorConnectorLoggingTest.unrecognisedFailure_logsErrorWithoutAHint_andRethrowsUnchanged(GovernorConnectorLoggingTest.java:215)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:700)
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:528)
+	at org.junit.jupiter.engine.support.MethodReflectionUtils.invoke(MethodReflectionUtils.java:53)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:61)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:124)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:163)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:148)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:124)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:105)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:99)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:66)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:47)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:39)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:104)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:98)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invokeVoid(InterceptingExecutableInvoker.java:71)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$0(TestMethodTestDescriptor.java:219)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:215)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:157)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:70)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:176)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:139)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:139)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:139)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:36)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:52)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.executeEngine(EngineExecutionOrchestrator.java:256)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.failOrExecuteEngine(EngineExecutionOrchestrator.java:228)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:189)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:109)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:66)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:168)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:65)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:137)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:126)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:71)
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$2(InterceptingLauncher.java:66)
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:65)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:71)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:125)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithCancellationToken(LauncherAdapter.java:68)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:54)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:283)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:253)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:221)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:394)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:181)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:530)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:518)
+]]></system-out>
+  </testcase>
+  <testcase name="malformedSecret_warnsFallsBackAndNeverLogsTheSecretText" classname="io.github.camunda.connector.GovernorConnectorLoggingTest" time="0.054">
+    <system-out><![CDATA[15:51:02.991 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 0 rows
+15:51:02.992 INFO  i.g.c.c.GovernorConnector - Token Cost Reporter loaded, default price table rows=0
+15:51:02.994 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 1 rows
+15:51:02.995 INFO  i.g.c.c.GovernorConnector - Token Cost Reporter loaded, default price table rows=1
+15:51:03.033 DEBUG i.g.c.c.GovernorConnector - Request: provider=anthropic model=claude-sonnet-5 agent='claims-triage' inputTokens=1000 outputTokens=1000 priceTableSecret=62 chars
+15:51:03.041 WARN  i.g.c.c.pricing.PriceTable - GOVERNOR_PRICE_TABLE could not be parsed as a JSON array of price rows (62 chars, JsonMappingException: Unexpected character ('T' (code 84)): was expecting double-quote to start field name) - falling back to the bundled default table
+15:51:03.041 DEBUG i.g.c.c.GovernorConnector - Price found in DEFAULT_TABLE: inputPer1kMicros=3000 outputPer1kMicros=15000 currency=USD
+15:51:03.042 DEBUG i.g.c.c.m.TokenCostMetrics - Recording governor_* counters on a non-composite registry: SimpleMeterRegistry
+15:51:03.043 DEBUG i.g.c.c.m.TokenCostMetrics - Recorded governor_* counters: provider=anthropic model=claude-sonnet-5 agent=claims-triage +calls=1 +inputTokens=1000 +outputTokens=1000 +costUsd=0.018
+15:51:03.043 INFO  i.g.c.c.GovernorConnector - Token cost: provider=anthropic model=claude-sonnet-5 agent=claims-triage inputTokens=1000 outputTokens=1000 totalTokens=2000 costMicros=18000 costUsd=0.018000 priceSource=DEFAULT_TABLE elapsedMs=21
+]]></system-out>
+  </testcase>
+  <testcase name="priceNotFound_warnsWithTheRequestedKeyAndTableSizes" classname="io.github.camunda.connector.GovernorConnectorLoggingTest" time="0.026">
+    <system-out><![CDATA[15:51:03.047 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 0 rows
+15:51:03.048 INFO  i.g.c.c.GovernorConnector - Token Cost Reporter loaded, default price table rows=0
+15:51:03.070 DEBUG i.g.c.c.GovernorConnector - Request: provider=anthropic model=claude-sonnet-5 agent='claims-triage' inputTokens=1000 outputTokens=1000 priceTableSecret=117 chars
+15:51:03.070 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 1 rows
+15:51:03.070 DEBUG i.g.c.c.GovernorConnector - anthropic:claude-sonnet-5 is not in the GOVERNOR_PRICE_TABLE secret (1 rows) - trying the bundled default table
+15:51:03.070 WARN  i.g.c.c.GovernorConnector - No price for anthropic:claude-sonnet-5 - secretTable=1 rows defaultTableRows=0
+15:51:03.070 DEBUG i.g.c.c.GovernorConnector - Known price keys: secretTable=[openai:gpt-5] defaultTable=[]
+]]></system-out>
+  </testcase>
+  <testcase name="emptyCompositeRegistry_warnsExactlyOnceThatMetricsWillNotBeExported" classname="io.github.camunda.connector.GovernorConnectorLoggingTest" time="0.078">
+    <system-out><![CDATA[15:51:03.083 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 0 rows
+15:51:03.084 INFO  i.g.c.c.GovernorConnector - Token Cost Reporter loaded, default price table rows=0
+15:51:03.086 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 1 rows
+15:51:03.090 INFO  i.g.c.c.GovernorConnector - Token Cost Reporter loaded, default price table rows=1
+15:51:03.118 DEBUG i.g.c.c.GovernorConnector - Request: provider=anthropic model=claude-sonnet-5 agent='claims-triage' inputTokens=1000 outputTokens=1000 priceTableSecret=133 chars
+15:51:03.119 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 1 rows
+15:51:03.120 DEBUG i.g.c.c.GovernorConnector - Price found in CLUSTER_SECRET: inputPer1kMicros=3000 outputPer1kMicros=15000 currency=USD
+15:51:03.120 WARN  i.g.c.c.m.TokenCostMetrics - Micrometer global registry has no child registries bound: governor_* counters are being recorded but will NOT appear on /actuator/prometheus. Check the host exposes a Prometheus registry (micrometer-registry-prometheus on the classpath) and management.metrics.use-global-registry is true.
+15:51:03.123 DEBUG i.g.c.c.m.TokenCostMetrics - Recorded governor_* counters: provider=anthropic model=claude-sonnet-5 agent=claims-triage +calls=1 +inputTokens=1000 +outputTokens=1000 +costUsd=0.018
+15:51:03.124 INFO  i.g.c.c.GovernorConnector - Token cost: provider=anthropic model=claude-sonnet-5 agent=claims-triage inputTokens=1000 outputTokens=1000 totalTokens=2000 costMicros=18000 costUsd=0.018000 priceSource=CLUSTER_SECRET elapsedMs=16
+15:51:03.151 DEBUG i.g.c.c.GovernorConnector - Request: provider=anthropic model=claude-sonnet-5 agent='claims-triage' inputTokens=1000 outputTokens=1000 priceTableSecret=133 chars
+15:51:03.154 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 1 rows
+15:51:03.155 DEBUG i.g.c.c.GovernorConnector - Price found in CLUSTER_SECRET: inputPer1kMicros=3000 outputPer1kMicros=15000 currency=USD
+15:51:03.155 DEBUG i.g.c.c.m.TokenCostMetrics - Recorded governor_* counters: provider=anthropic model=claude-sonnet-5 agent=claims-triage +calls=1 +inputTokens=1000 +outputTokens=1000 +costUsd=0.018
+15:51:03.156 INFO  i.g.c.c.GovernorConnector - Token cost: provider=anthropic model=claude-sonnet-5 agent=claims-triage inputTokens=1000 outputTokens=1000 totalTokens=2000 costMicros=18000 costUsd=0.018000 priceSource=CLUSTER_SECRET elapsedMs=15
+]]></system-out>
+  </testcase>
+  <testcase name="success_logsOneInfoTraceLineWithEverythingNeededToFollowTheRun" classname="io.github.camunda.connector.GovernorConnectorLoggingTest" time="0.047">
+    <system-out><![CDATA[15:51:03.162 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 0 rows
+15:51:03.163 INFO  i.g.c.c.GovernorConnector - Token Cost Reporter loaded, default price table rows=0
+15:51:03.200 DEBUG i.g.c.c.GovernorConnector - Request: provider=anthropic model=claude-sonnet-5 agent='claims-triage' inputTokens=1000 outputTokens=1000 priceTableSecret=133 chars
+15:51:03.201 DEBUG i.g.c.c.pricing.PriceTable - Parsed GOVERNOR_PRICE_TABLE: 1 rows
+15:51:03.202 DEBUG i.g.c.c.GovernorConnector - Price found in CLUSTER_SECRET: inputPer1kMicros=3000 outputPer1kMicros=15000 currency=USD
+15:51:03.203 DEBUG i.g.c.c.m.TokenCostMetrics - Recording governor_* counters on a non-composite registry: SimpleMeterRegistry
+15:51:03.204 DEBUG i.g.c.c.m.TokenCostMetrics - Recorded governor_* counters: provider=anthropic model=claude-sonnet-5 agent=claims-triage +calls=1 +inputTokens=1000 +outputTokens=1000 +costUsd=0.018
+15:51:03.204 INFO  i.g.c.c.GovernorConnector - Token cost: provider=anthropic model=claude-sonnet-5 agent=claims-triage inputTokens=1000 outputTokens=1000 totalTokens=2000 costMicros=18000 costUsd=0.018000 priceSource=CLUSTER_SECRET elapsedMs=22
+]]></system-out>
+  </testcase>
+</testsuite>

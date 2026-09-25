@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_AiAgentSubprocessCostTracking" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Web Modeler" exporterVersion="f38b97d" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
+  <bpmn:process id="ai-agent-subprocess-cost-tracking" name="AI Agent Sub-process with token/cost tracking" isExecutable="true">
+    <bpmn:documentation>Token Cost Reporter demo with two REAL AI Agent Sub-process elements (ad-hoc sub-process, template io.camunda.connectors.agenticai.aiagent.jobworker.v1, job type io.camunda.agenticai:aiagent-job-worker:1), each followed by its own Token cost task.
+
+Research Analyst (big context): long system prompt and a long claim brief, context window 100, up to 10 model calls, uses its date tool, so it makes several model calls and re-sends a large context each time - a lot of input tokens. Quick Answer (small context): one-line system prompt, one short question, context window 4, up to 2 model calls, no tool call - a handful of tokens. Token cost prices each call as anthropic / claude-haiku-4-5 under the agent names research-analyst and quick-answer (the Prometheus label agent).
+
+Where the tokens are: when an AI Agent Sub-process finishes, its job sets the variable agent (the sub-process output mapping =agent copies it to the process). It only contains context when Include agent context (data.response.includeAgentContext) is true, so both sub-processes set it. Then agent.context.metrics.tokenUsage.inputTokenCount / outputTokenCount is the total over ALL model calls of that sub-process (agent.context.metrics.modelCalls counts them). Nothing is hard-coded in the Token cost tasks: each reads its own agent result.
+
+Zeebe refuses to deploy an ad-hoc sub-process with no activity, so each agent contains one tool (a script task); replace it with your own tools. The Token cost input for the agent label is called agentName, not agent: the sub-process result variable is agent and an input of that name would shadow it.
+
+business_ prefix: on Camunda 8.10 SaaS the default Optimize data filter exports only variables named business_*. business_totalCostUsd (USD) and business_totalCost (whole micro-dollars) are running totals across both calls; business_costAgent lists the agent names of every Token cost call, comma separated ("research-analyst, quick-answer"), and tokenCostResult holds the LAST call (Quick Answer). Each Token cost task also writes its own agent's cost to a variable of its own, business_researchAnalystCost and business_quickAnswerCost, because Optimize reads one variable per report and would otherwise show only the last agent. Like business_totalCost these are whole micro-dollars (1,000,000 = 1 USD), not USD, and their names carry no unit: Zeebe exports a decimal below 0.001 as 7.77E-4, which is what Optimize's table would print, and Optimize rounds its number tiles to 3 decimals. The same task also writes that agent's tokens: business_researchAnalystInputTokens / OutputTokens / TotalTokens and business_quickAnswerInputTokens / OutputTokens / TotalTokens, copied from tokenCostResult (the agent's total over all its model calls; total = input + output), so Optimize can show them per agent. The Prometheus counters also carry the per-agent split. See optimize/ai-cost-dashboard -subprocess.json.
+
+Gotcha: applying or updating the Token Cost Reporter element template on a Token cost task in Modeler regenerates its whole input/output mapping and deletes the eight output lines (tokenCostResult, business_totalCost, business_totalCostUsd, business_costAgent, the task's per-agent cost variable, business_researchAnalystCost or business_quickAnswerCost, and its three token variables, business_researchAnalystInputTokens / OutputTokens / TotalTokens or business_quickAnswerInputTokens / OutputTokens / TotalTokens). Re-add them.</bpmn:documentation>
+    <bpmn:startEvent id="StartEvent_1" name="Start">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=0" target="business_totalCost" />
+          <zeebe:output source="=0" target="business_totalCostUsd" />
+          <zeebe:output source="=&#34;&#34;" target="business_costAgent" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>Flow_1px4rdd</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="EndEvent_Done" name="Done">
+      <bpmn:incoming>Flow_0qo53nk</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:adHocSubProcess id="Activity_1kyv3gj" name="Research Analyst (big context)" zeebe:modelerTemplate="io.camunda.connectors.agenticai.aiagent.jobworker.v1" zeebe:modelerTemplateVersion="7" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiNBNTZFRkYiLz4KPG1hc2sgaWQ9InBhdGgtMi1vdXRzaWRlLTFfMTg1XzYiIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjQiIHk9IjQiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0iYmxhY2siPgo8cmVjdCBmaWxsPSJ3aGl0ZSIgeD0iNCIgeT0iNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0Ii8+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMjAuMDEwNSAxMi4wOTg3QzE4LjQ5IDEwLjU4OTQgMTcuMTU5NCA4LjEwODE0IDE2LjE3OTkgNi4wMTEwM0MxNi4xNTIgNi4wMDQ1MSAxNi4xMTc2IDYgMTYuMDc5NCA2QzE2LjA0MTEgNiAxNi4wMDY2IDYuMDA0NTEgMTUuOTc4OCA2LjAxMTA0QzE0Ljk5OTQgOC4xMDgxNCAxMy42Njk3IDEwLjU4ODkgMTIuMTQ4MSAxMi4wOTgxQzEwLjYyNjkgMTMuNjA3MSA4LjEyNTY4IDE0LjkyNjQgNi4wMTE1NyAxNS44OTgxQzYuMDA0NzQgMTUuOTI2MSA2IDE1Ljk2MTEgNiAxNkM2IDE2LjAzODcgNi4wMDQ2OCAxNi4wNzM2IDYuMDExNDQgMTYuMTAxNEM4LjEyNTE5IDE3LjA3MjkgMTAuNjI2MiAxOC4zOTE5IDEyLjE0NzcgMTkuOTAxNkMxMy42Njk3IDIxLjQxMDcgMTQuOTk5NiAyMy44OTIgMTUuOTc5MSAyNS45ODlDMTYuMDA2OCAyNS45OTU2IDE2LjA0MTEgMjYgMTYuMDc5MyAyNkMxNi4xMTc1IDI2IDE2LjE1MTkgMjUuOTk1NCAxNi4xNzk2IDI1Ljk4OUMxNy4xNTkxIDIzLjg5MiAxOC40ODg4IDIxLjQxMSAyMC4wMDk5IDE5LjkwMjFNMjAuMDA5OSAxOS45MDIxQzIxLjUyNTMgMTguMzk4NyAyMy45NDY1IDE3LjA2NjkgMjUuOTkxNSAxNi4wODI0QzI1Ljk5NjUgMTYuMDU5MyAyNiAxNi4wMzEgMjYgMTUuOTk5N0MyNiAxNS45Njg0IDI1Ljk5NjUgMTUuOTQwMyAyNS45OTE1IDE1LjkxNzFDMjMuOTQ3NCAxNC45MzI3IDIxLjUyNTkgMTMuNjAxIDIwLjAxMDUgMTIuMDk4NyIvPgo8L21hc2s+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMjAuMDEwNSAxMi4wOTg3QzE4LjQ5IDEwLjU4OTQgMTcuMTU5NCA4LjEwODE0IDE2LjE3OTkgNi4wMTEwM0MxNi4xNTIgNi4wMDQ1MSAxNi4xMTc2IDYgMTYuMDc5NCA2QzE2LjA0MTEgNiAxNi4wMDY2IDYuMDA0NTEgMTUuOTc4OCA2LjAxMTA0QzE0Ljk5OTQgOC4xMDgxNCAxMy42Njk3IDEwLjU4ODkgMTIuMTQ4MSAxMi4wOTgxQzEwLjYyNjkgMTMuNjA3MSA4LjEyNTY4IDE0LjkyNjQgNi4wMTE1NyAxNS44OTgxQzYuMDA0NzQgMTUuOTI2MSA2IDE1Ljk2MTEgNiAxNkM2IDE2LjAzODcgNi4wMDQ2OCAxNi4wNzM2IDYuMDExNDQgMTYuMTAxNEM4LjEyNTE5IDE3LjA3MjkgMTAuNjI2MiAxOC4zOTE5IDEyLjE0NzcgMTkuOTAxNkMxMy42Njk3IDIxLjQxMDcgMTQuOTk5NiAyMy44OTIgMTUuOTc5MSAyNS45ODlDMTYuMDA2OCAyNS45OTU2IDE2LjA0MTEgMjYgMTYuMDc5MyAyNkMxNi4xMTc1IDI2IDE2LjE1MTkgMjUuOTk1NCAxNi4xNzk2IDI1Ljk4OUMxNy4xNTkxIDIzLjg5MiAxOC40ODg4IDIxLjQxMSAyMC4wMDk5IDE5LjkwMjFNMjAuMDA5OSAxOS45MDIxQzIxLjUyNTMgMTguMzk4NyAyMy45NDY1IDE3LjA2NjkgMjUuOTkxNSAxNi4wODI0QzI1Ljk5NjUgMTYuMDU5MyAyNiAxNi4wMzEgMjYgMTUuOTk5N0MyNiAxNS45Njg0IDI1Ljk5NjUgMTUuOTQwMyAyNS45OTE1IDE1LjkxNzFDMjMuOTQ3NCAxNC45MzI3IDIxLjUyNTkgMTMuNjAxIDIwLjAxMDUgMTIuMDk4NyIgZmlsbD0id2hpdGUiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0yMC4wMTA1IDEyLjA5ODdDMTguNDkgMTAuNTg5NCAxNy4xNTk0IDguMTA4MTQgMTYuMTc5OSA2LjAxMTAzQzE2LjE1MiA2LjAwNDUxIDE2LjExNzYgNiAxNi4wNzk0IDZDMTYuMDQxMSA2IDE2LjAwNjYgNi4wMDQ1MSAxNS45Nzg4IDYuMDExMDRDMTQuOTk5NCA4LjEwODE0IDEzLjY2OTcgMTAuNTg4OSAxMi4xNDgxIDEyLjA5ODFDMTAuNjI2OSAxMy42MDcxIDguMTI1NjggMTQuOTI2NCA2LjAxMTU3IDE1Ljg5ODFDNi4wMDQ3NCAxNS45MjYxIDYgMTUuOTYxMSA2IDE2QzYgMTYuMDM4NyA2LjAwNDY4IDE2LjA3MzYgNi4wMTE0NCAxNi4xMDE0QzguMTI1MTkgMTcuMDcyOSAxMC42MjYyIDE4LjM5MTkgMTIuMTQ3NyAxOS45MDE2QzEzLjY2OTcgMjEuNDEwNyAxNC45OTk2IDIzLjg5MiAxNS45NzkxIDI1Ljk4OUMxNi4wMDY4IDI1Ljk5NTYgMTYuMDQxMSAyNiAxNi4wNzkzIDI2QzE2LjExNzUgMjYgMTYuMTUxOSAyNS45OTU0IDE2LjE3OTYgMjUuOTg5QzE3LjE1OTEgMjMuODkyIDE4LjQ4ODggMjEuNDExIDIwLjAwOTkgMTkuOTAyMU0yMC4wMDk5IDE5LjkwMjFDMjEuNTI1MyAxOC4zOTg3IDIzLjk0NjUgMTcuMDY2OSAyNS45OTE1IDE2LjA4MjRDMjUuOTk2NSAxNi4wNTkzIDI2IDE2LjAzMSAyNiAxNS45OTk3QzI2IDE1Ljk2ODQgMjUuOTk2NSAxNS45NDAzIDI1Ljk5MTUgMTUuOTE3MUMyMy45NDc0IDE0LjkzMjcgMjEuNTI1OSAxMy42MDEgMjAuMDEwNSAxMi4wOTg3IiBzdHJva2U9IiM0OTFEOEIiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgbWFzaz0idXJsKCNwYXRoLTItb3V0c2lkZS0xXzE4NV82KSIvPgo8L3N2Zz4K">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.camunda.agenticai:aiagent-job-worker:1" retries="3" />
+        <zeebe:adHoc outputCollection="toolCallResults" outputElement="={&#10;  id: toolCall._meta.id,&#10;  name: toolCall._meta.name,&#10;  content: toolCallResult&#10;}" />
+        <zeebe:properties>
+          <zeebe:property name="io.camunda.agenticai.toolContainer" value="true" />
+        </zeebe:properties>
+        <zeebe:ioMapping>
+          <zeebe:input source="openaiCompatible" target="provider.type" />
+          <zeebe:input source="{{secrets.CAMUNDA_PROVIDED_LLM_API_ENDPOINT}}" target="provider.openaiCompatible.endpoint" />
+          <zeebe:input source="{{secrets.CAMUNDA_PROVIDED_LLM_API_KEY}}" target="provider.openaiCompatible.authentication.apiKey" />
+          <zeebe:input source="anthropic.claude-haiku-4-5" target="provider.openaiCompatible.model.model" />
+          <zeebe:input source="=&#34;You are **Research Analyst**, a senior analyst at an insurance company who prepares written case reviews for claims managers.&#10;&#10;Work in this order:&#10;1. Read the whole brief before answering and keep every figure, date and name exactly as given.&#10;2. Call your date tool once so the review carries today&#39;s date.&#10;3. Identify the customer&#39;s request, the policy terms that apply, the evidence provided, and anything missing.&#10;4. Compare the case with the guidelines listed in the brief and note where they agree or conflict.&#10;5. Recommend one of: approve, request more information, or escalate, and give the reasons in order of importance.&#10;&#10;Write the review with these sections: Summary, Key facts, Applicable guidelines, Gaps and risks, Recommendation. Use plain sentences, no marketing language, and never invent facts that are not in the brief. If the brief is contradictory, say so in Gaps and risks instead of choosing silently. Keep the total under 400 words.&#34;" target="data.systemPrompt.prompt" />
+          <zeebe:input source="=&#34;Please review the following claim and prepare the case review.&#10;&#10;CASE NOTES&#10;Claim ID: CLM-2026-004417. Policy holder: Jordan Meyer, home contents policy HC-77120, active since 2021-03-14, annual premium 612 USD, excess 250 USD.&#10;Loss reported: 2026-09-02 by phone. Incident date: 2026-08-29 (burst pipe in the upstairs bathroom while the holder was away).&#10;Claimed items: 1 laptop (3,200 USD), 1 sofa (1,850 USD), 1 rug (900 USD), 6 dining chairs (1,140 USD), 1 television (1,300 USD). Total claimed: 8,390 USD.&#10;Evidence received: 14 photos of the water damage, a plumber&#39;s invoice for the repair (480 USD), receipts for the laptop and the television, no receipts for the sofa, the rug or the chairs.&#10;Neighbour statement: the flat below reports a water stain on the ceiling from 2026-08-30.&#10;History: two earlier claims on this policy, both paid: 2022 (stolen bicycle, 640 USD) and 2024 (broken window, 410 USD).&#10;&#10;GUIDELINES&#10;G1. Water damage from a sudden pipe burst is covered; gradual leaks and wear are not.&#10;G2. Items over 1,000 USD need proof of ownership such as a receipt, a bank statement or a warranty card.&#10;G3. Items under 1,000 USD can be accepted with photos of the damaged item alone.&#10;G4. Claims above 5,000 USD need a second reviewer.&#10;G5. The holder must report the loss within 14 days of the incident.&#10;G6. Depreciation of 10 percent per year applies to furniture and 20 percent per year to electronics, capped at 70 percent.&#10;&#10;Please check each claimed item against G1 to G6, calculate the payable amount before the excess, and say what you still need from the holder.&#34;" target="data.userPrompt.prompt" />
+          <zeebe:input target="agentContext" />
+          <zeebe:input source="in-process" target="data.memory.storage.type" />
+          <zeebe:input source="=100" target="data.memory.contextWindowSize" />
+          <zeebe:input source="=10" target="data.limits.maxModelCalls" />
+          <zeebe:input source="WAIT_FOR_TOOL_CALL_RESULTS" target="data.events.behavior" />
+          <zeebe:input source="text" target="data.response.format.type" />
+          <zeebe:input source="=false" target="data.response.format.parseJson" />
+          <zeebe:input source="=false" target="data.response.includeAssistantMessage" />
+          <zeebe:input source="=true" target="data.response.includeAgentContext" />
+          <zeebe:input target="agent" />
+          <zeebe:output source="=agent" target="agent" />
+        </zeebe:ioMapping>
+        <zeebe:taskHeaders>
+          <zeebe:header key="elementTemplateVersion" value="7" />
+          <zeebe:header key="elementTemplateId" value="io.camunda.connectors.agenticai.aiagent.jobworker.v1" />
+          <zeebe:header key="errorExpression" />
+          <zeebe:header key="retryBackoff" value="PT0S" />
+        </zeebe:taskHeaders>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1px4rdd</bpmn:incoming>
+      <bpmn:outgoing>Flow_1b1kcy9</bpmn:outgoing>
+      <bpmn:scriptTask id="Tool_GetDateTime1" name="Look up today&#39;s date">
+        <bpmn:documentation>Returns the current date and time. Call it once, before writing the review, so the review carries today&#39;s date.</bpmn:documentation>
+        <bpmn:extensionElements>
+          <zeebe:script expression="=now()" resultVariable="toolCallResult" />
+        </bpmn:extensionElements>
+      </bpmn:scriptTask>
+    </bpmn:adHocSubProcess>
+    <bpmn:sequenceFlow id="Flow_1px4rdd" sourceRef="StartEvent_1" targetRef="Activity_1kyv3gj" />
+    <bpmn:adHocSubProcess id="Activity_0alays1" name="Quick Answer (small context)" zeebe:modelerTemplate="io.camunda.connectors.agenticai.aiagent.jobworker.v1" zeebe:modelerTemplateVersion="7" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiNBNTZFRkYiLz4KPG1hc2sgaWQ9InBhdGgtMi1vdXRzaWRlLTFfMTg1XzYiIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjQiIHk9IjQiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0iYmxhY2siPgo8cmVjdCBmaWxsPSJ3aGl0ZSIgeD0iNCIgeT0iNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0Ii8+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMjAuMDEwNSAxMi4wOTg3QzE4LjQ5IDEwLjU4OTQgMTcuMTU5NCA4LjEwODE0IDE2LjE3OTkgNi4wMTEwM0MxNi4xNTIgNi4wMDQ1MSAxNi4xMTc2IDYgMTYuMDc5NCA2QzE2LjA0MTEgNiAxNi4wMDY2IDYuMDA0NTEgMTUuOTc4OCA2LjAxMTA0QzE0Ljk5OTQgOC4xMDgxNCAxMy42Njk3IDEwLjU4ODkgMTIuMTQ4MSAxMi4wOTgxQzEwLjYyNjkgMTMuNjA3MSA4LjEyNTY4IDE0LjkyNjQgNi4wMTE1NyAxNS44OTgxQzYuMDA0NzQgMTUuOTI2MSA2IDE1Ljk2MTEgNiAxNkM2IDE2LjAzODcgNi4wMDQ2OCAxNi4wNzM2IDYuMDExNDQgMTYuMTAxNEM4LjEyNTE5IDE3LjA3MjkgMTAuNjI2MiAxOC4zOTE5IDEyLjE0NzcgMTkuOTAxNkMxMy42Njk3IDIxLjQxMDcgMTQuOTk5NiAyMy44OTIgMTUuOTc5MSAyNS45ODlDMTYuMDA2OCAyNS45OTU2IDE2LjA0MTEgMjYgMTYuMDc5MyAyNkMxNi4xMTc1IDI2IDE2LjE1MTkgMjUuOTk1NCAxNi4xNzk2IDI1Ljk4OUMxNy4xNTkxIDIzLjg5MiAxOC40ODg4IDIxLjQxMSAyMC4wMDk5IDE5LjkwMjFNMjAuMDA5OSAxOS45MDIxQzIxLjUyNTMgMTguMzk4NyAyMy45NDY1IDE3LjA2NjkgMjUuOTkxNSAxNi4wODI0QzI1Ljk5NjUgMTYuMDU5MyAyNiAxNi4wMzEgMjYgMTUuOTk5N0MyNiAxNS45Njg0IDI1Ljk5NjUgMTUuOTQwMyAyNS45OTE1IDE1LjkxNzFDMjMuOTQ3NCAxNC45MzI3IDIxLjUyNTkgMTMuNjAxIDIwLjAxMDUgMTIuMDk4NyIvPgo8L21hc2s+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMjAuMDEwNSAxMi4wOTg3QzE4LjQ5IDEwLjU4OTQgMTcuMTU5NCA4LjEwODE0IDE2LjE3OTkgNi4wMTEwM0MxNi4xNTIgNi4wMDQ1MSAxNi4xMTc2IDYgMTYuMDc5NCA2QzE2LjA0MTEgNiAxNi4wMDY2IDYuMDA0NTEgMTUuOTc4OCA2LjAxMTA0QzE0Ljk5OTQgOC4xMDgxNCAxMy42Njk3IDEwLjU4ODkgMTIuMTQ4MSAxMi4wOTgxQzEwLjYyNjkgMTMuNjA3MSA4LjEyNTY4IDE0LjkyNjQgNi4wMTE1NyAxNS44OTgxQzYuMDA0NzQgMTUuOTI2MSA2IDE1Ljk2MTEgNiAxNkM2IDE2LjAzODcgNi4wMDQ2OCAxNi4wNzM2IDYuMDExNDQgMTYuMTAxNEM4LjEyNTE5IDE3LjA3MjkgMTAuNjI2MiAxOC4zOTE5IDEyLjE0NzcgMTkuOTAxNkMxMy42Njk3IDIxLjQxMDcgMTQuOTk5NiAyMy44OTIgMTUuOTc5MSAyNS45ODlDMTYuMDA2OCAyNS45OTU2IDE2LjA0MTEgMjYgMTYuMDc5MyAyNkMxNi4xMTc1IDI2IDE2LjE1MTkgMjUuOTk1NCAxNi4xNzk2IDI1Ljk4OUMxNy4xNTkxIDIzLjg5MiAxOC40ODg4IDIxLjQxMSAyMC4wMDk5IDE5LjkwMjFNMjAuMDA5OSAxOS45MDIxQzIxLjUyNTMgMTguMzk4NyAyMy45NDY1IDE3LjA2NjkgMjUuOTkxNSAxNi4wODI0QzI1Ljk5NjUgMTYuMDU5MyAyNiAxNi4wMzEgMjYgMTUuOTk5N0MyNiAxNS45Njg0IDI1Ljk5NjUgMTUuOTQwMyAyNS45OTE1IDE1LjkxNzFDMjMuOTQ3NCAxNC45MzI3IDIxLjUyNTkgMTMuNjAxIDIwLjAxMDUgMTIuMDk4NyIgZmlsbD0id2hpdGUiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0yMC4wMTA1IDEyLjA5ODdDMTguNDkgMTAuNTg5NCAxNy4xNTk0IDguMTA4MTQgMTYuMTc5OSA2LjAxMTAzQzE2LjE1MiA2LjAwNDUxIDE2LjExNzYgNiAxNi4wNzk0IDZDMTYuMDQxMSA2IDE2LjAwNjYgNi4wMDQ1MSAxNS45Nzg4IDYuMDExMDRDMTQuOTk5NCA4LjEwODE0IDEzLjY2OTcgMTAuNTg4OSAxMi4xNDgxIDEyLjA5ODFDMTAuNjI2OSAxMy42MDcxIDguMTI1NjggMTQuOTI2NCA2LjAxMTU3IDE1Ljg5ODFDNi4wMDQ3NCAxNS45MjYxIDYgMTUuOTYxMSA2IDE2QzYgMTYuMDM4NyA2LjAwNDY4IDE2LjA3MzYgNi4wMTE0NCAxNi4xMDE0QzguMTI1MTkgMTcuMDcyOSAxMC42MjYyIDE4LjM5MTkgMTIuMTQ3NyAxOS45MDE2QzEzLjY2OTcgMjEuNDEwNyAxNC45OTk2IDIzLjg5MiAxNS45NzkxIDI1Ljk4OUMxNi4wMDY4IDI1Ljk5NTYgMTYuMDQxMSAyNiAxNi4wNzkzIDI2QzE2LjExNzUgMjYgMTYuMTUxOSAyNS45OTU0IDE2LjE3OTYgMjUuOTg5QzE3LjE1OTEgMjMuODkyIDE4LjQ4ODggMjEuNDExIDIwLjAwOTkgMTkuOTAyMU0yMC4wMDk5IDE5LjkwMjFDMjEuNTI1MyAxOC4zOTg3IDIzLjk0NjUgMTcuMDY2OSAyNS45OTE1IDE2LjA4MjRDMjUuOTk2NSAxNi4wNTkzIDI2IDE2LjAzMSAyNiAxNS45OTk3QzI2IDE1Ljk2ODQgMjUuOTk2NSAxNS45NDAzIDI1Ljk5MTUgMTUuOTE3MUMyMy45NDc0IDE0LjkzMjcgMjEuNTI1OSAxMy42MDEgMjAuMDEwNSAxMi4wOTg3IiBzdHJva2U9IiM0OTFEOEIiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgbWFzaz0idXJsKCNwYXRoLTItb3V0c2lkZS0xXzE4NV82KSIvPgo8L3N2Zz4K">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.camunda.agenticai:aiagent-job-worker:1" retries="3" />
+        <zeebe:adHoc outputCollection="toolCallResults" outputElement="={&#10;  id: toolCall._meta.id,&#10;  name: toolCall._meta.name,&#10;  content: toolCallResult&#10;}" />
+        <zeebe:properties>
+          <zeebe:property name="io.camunda.agenticai.toolContainer" value="true" />
+        </zeebe:properties>
+        <zeebe:ioMapping>
+          <zeebe:input source="openaiCompatible" target="provider.type" />
+          <zeebe:input source="{{secrets.CAMUNDA_PROVIDED_LLM_API_ENDPOINT}}" target="provider.openaiCompatible.endpoint" />
+          <zeebe:input source="{{secrets.CAMUNDA_PROVIDED_LLM_API_KEY}}" target="provider.openaiCompatible.authentication.apiKey" />
+          <zeebe:input source="anthropic.claude-haiku-4-5" target="provider.openaiCompatible.model.model" />
+          <zeebe:input source="=&#34;You are **Quick Answer**, a concise assistant. Answer in one short sentence and never ask follow-up questions.&#34;" target="data.systemPrompt.prompt" />
+          <zeebe:input source="=&#34;In one short sentence, what is a token when talking about large language models?&#34;" target="data.userPrompt.prompt" />
+          <zeebe:input target="agentContext" />
+          <zeebe:input source="in-process" target="data.memory.storage.type" />
+          <zeebe:input source="=4" target="data.memory.contextWindowSize" />
+          <zeebe:input source="=2" target="data.limits.maxModelCalls" />
+          <zeebe:input source="WAIT_FOR_TOOL_CALL_RESULTS" target="data.events.behavior" />
+          <zeebe:input source="text" target="data.response.format.type" />
+          <zeebe:input source="=false" target="data.response.format.parseJson" />
+          <zeebe:input source="=false" target="data.response.includeAssistantMessage" />
+          <zeebe:input source="=true" target="data.response.includeAgentContext" />
+          <zeebe:input target="agent" />
+          <zeebe:output source="=agent" target="agent" />
+        </zeebe:ioMapping>
+        <zeebe:taskHeaders>
+          <zeebe:header key="elementTemplateVersion" value="7" />
+          <zeebe:header key="elementTemplateId" value="io.camunda.connectors.agenticai.aiagent.jobworker.v1" />
+          <zeebe:header key="errorExpression" />
+          <zeebe:header key="retryBackoff" value="PT0S" />
+        </zeebe:taskHeaders>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1lv0ach</bpmn:incoming>
+      <bpmn:outgoing>Flow_1nm1ft4</bpmn:outgoing>
+      <bpmn:scriptTask id="Tool_GetDateTime2" name="Get current time">
+        <bpmn:documentation>Returns the current date and time. Only use it if the user explicitly asks for the time.</bpmn:documentation>
+        <bpmn:extensionElements>
+          <zeebe:script expression="=now()" resultVariable="toolCallResult" />
+        </bpmn:extensionElements>
+      </bpmn:scriptTask>
+    </bpmn:adHocSubProcess>
+    <bpmn:sequenceFlow id="Flow_1b1kcy9" sourceRef="Activity_1kyv3gj" targetRef="Activity_0vkhe3f" />
+    <bpmn:serviceTask id="Activity_0vkhe3f" name="Token cost (Research Analyst)" zeebe:modelerTemplate="io.github.camunda.TokenCostGovernor.v2" zeebe:modelerTemplateVersion="6" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIj4KICA8cGF0aCBkPSJNMTYgMiBMMjggNyBWMTUgQzI4IDIyLjUgMjIuOCAyNy44IDE2IDMwIEM5LjIgMjcuOCA0IDIyLjUgNCAxNSBWNyBaIgogICAgICAgIGZpbGw9IiMwZjc2NmUiIHN0cm9rZT0iIzEzNGU0YSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgPHBhdGggZD0iTTE2IDIgTDI4IDcgVjE1IEMyOCAyMi41IDIyLjggMjcuOCAxNiAzMCBaIiBmaWxsPSIjMTRiOGE2IiBvcGFjaXR5PSIwLjM1Ii8+CiAgPHRleHQgeD0iMTYiIHk9IjIxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIEhlbHZldGljYSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmZmZmYiPiQ8L3RleHQ+Cjwvc3ZnPgo=">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.github.camunda:token-cost-governor:1" retries="3" />
+        <zeebe:ioMapping>
+          <zeebe:input source="{{secrets.GOVERNOR_PRICE_TABLE}}" target="priceTableSecret" />
+          <zeebe:input source="anthropic" target="provider" />
+          <zeebe:input source="claude-haiku-4-5" target="model" />
+          <zeebe:input source="research-analyst" target="agentName" />
+          <zeebe:input source="=agent.context.metrics.tokenUsage.inputTokenCount" target="inputTokens" />
+          <zeebe:input source="=agent.context.metrics.tokenUsage.outputTokenCount" target="outputTokens" />
+          <zeebe:output source="=tokenCostResult" target="tokenCostResult" />
+          <zeebe:output source="=business_totalCost + tokenCostResult.costMicros" target="business_totalCost" />
+          <zeebe:output source="=business_totalCostUsd + tokenCostResult.costUsd" target="business_totalCostUsd" />
+          <zeebe:output source="=if business_costAgent = &#34;&#34; then tokenCostResult.agent else business_costAgent + &#34;, &#34; + tokenCostResult.agent" target="business_costAgent" />
+          <zeebe:output source="=tokenCostResult.costMicros" target="business_researchAnalystCost" />
+          <zeebe:output source="=tokenCostResult.inputTokens" target="business_researchAnalystInputTokens" />
+          <zeebe:output source="=tokenCostResult.outputTokens" target="business_researchAnalystOutputTokens" />
+          <zeebe:output source="=tokenCostResult.totalTokens" target="business_researchAnalystTotalTokens" />
+        </zeebe:ioMapping>
+        <zeebe:taskHeaders>
+          <zeebe:header key="elementTemplateVersion" value="6" />
+          <zeebe:header key="elementTemplateId" value="io.github.camunda.TokenCostGovernor.v2" />
+          <zeebe:header key="resultVariable" value="tokenCostResult" />
+          <zeebe:header key="resultExpression" />
+          <zeebe:header key="errorExpression" />
+          <zeebe:header key="retryBackoff" value="PT0S" />
+        </zeebe:taskHeaders>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1b1kcy9</bpmn:incoming>
+      <bpmn:outgoing>Flow_1lv0ach</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1lv0ach" sourceRef="Activity_0vkhe3f" targetRef="Activity_0alays1" />
+    <bpmn:serviceTask id="Activity_1vgqpep" name="Token cost (Quick Answer)" zeebe:modelerTemplate="io.github.camunda.TokenCostGovernor.v2" zeebe:modelerTemplateVersion="6" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIj4KICA8cGF0aCBkPSJNMTYgMiBMMjggNyBWMTUgQzI4IDIyLjUgMjIuOCAyNy44IDE2IDMwIEM5LjIgMjcuOCA0IDIyLjUgNCAxNSBWNyBaIgogICAgICAgIGZpbGw9IiMwZjc2NmUiIHN0cm9rZT0iIzEzNGU0YSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgPHBhdGggZD0iTTE2IDIgTDI4IDcgVjE1IEMyOCAyMi41IDIyLjggMjcuOCAxNiAzMCBaIiBmaWxsPSIjMTRiOGE2IiBvcGFjaXR5PSIwLjM1Ii8+CiAgPHRleHQgeD0iMTYiIHk9IjIxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIEhlbHZldGljYSwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiNmZmZmZmYiPiQ8L3RleHQ+Cjwvc3ZnPgo=">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.github.camunda:token-cost-governor:1" retries="3" />
+        <zeebe:ioMapping>
+          <zeebe:input source="{{secrets.GOVERNOR_PRICE_TABLE}}" target="priceTableSecret" />
+          <zeebe:input source="anthropic" target="provider" />
+          <zeebe:input source="claude-haiku-4-5" target="model" />
+          <zeebe:input source="quick-answer" target="agentName" />
+          <zeebe:input source="=agent.context.metrics.tokenUsage.inputTokenCount" target="inputTokens" />
+          <zeebe:input source="=agent.context.metrics.tokenUsage.outputTokenCount" target="outputTokens" />
+          <zeebe:output source="=tokenCostResult" target="tokenCostResult" />
+          <zeebe:output source="=business_totalCost + tokenCostResult.costMicros" target="business_totalCost" />
+          <zeebe:output source="=business_totalCostUsd + tokenCostResult.costUsd" target="business_totalCostUsd" />
+          <zeebe:output source="=if business_costAgent = &#34;&#34; then tokenCostResult.agent else business_costAgent + &#34;, &#34; + tokenCostResult.agent" target="business_costAgent" />
+          <zeebe:output source="=tokenCostResult.costMicros" target="business_quickAnswerCost" />
+          <zeebe:output source="=tokenCostResult.inputTokens" target="business_quickAnswerInputTokens" />
+          <zeebe:output source="=tokenCostResult.outputTokens" target="business_quickAnswerOutputTokens" />
+          <zeebe:output source="=tokenCostResult.totalTokens" target="business_quickAnswerTotalTokens" />
+        </zeebe:ioMapping>
+        <zeebe:taskHeaders>
+          <zeebe:header key="elementTemplateVersion" value="6" />
+          <zeebe:header key="elementTemplateId" value="io.github.camunda.TokenCostGovernor.v2" />
+          <zeebe:header key="resultVariable" value="tokenCostResult" />
+          <zeebe:header key="resultExpression" />
+          <zeebe:header key="errorExpression" />
+          <zeebe:header key="retryBackoff" value="PT0S" />
+        </zeebe:taskHeaders>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1nm1ft4</bpmn:incoming>
+      <bpmn:outgoing>Flow_0qo53nk</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1nm1ft4" sourceRef="Activity_0alays1" targetRef="Activity_1vgqpep" />
+    <bpmn:sequenceFlow id="Flow_0qo53nk" sourceRef="Activity_1vgqpep" targetRef="EndEvent_Done" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="ai-agent-subprocess-cost-tracking">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="202" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Done_di" bpmnElement="EndEvent_Done">
+        <dc:Bounds x="1422" y="202" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1427" y="238" width="27" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1kyv3gj_di" bpmnElement="Activity_1kyv3gj" isExpanded="true">
+        <dc:Bounds x="245" y="120" width="350" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Tool_GetDateTime1_di" bpmnElement="Tool_GetDateTime1">
+        <dc:Bounds x="370" y="180" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0alays1_di" bpmnElement="Activity_0alays1" isExpanded="true">
+        <dc:Bounds x="810" y="120" width="350" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Tool_GetDateTime2_di" bpmnElement="Tool_GetDateTime2">
+        <dc:Bounds x="935" y="180" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0vkhe3f_di" bpmnElement="Activity_0vkhe3f">
+        <dc:Bounds x="640" y="180" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1vgqpep_di" bpmnElement="Activity_1vgqpep">
+        <dc:Bounds x="1250" y="180" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1px4rdd_di" bpmnElement="Flow_1px4rdd">
+        <di:waypoint x="188" y="220" />
+        <di:waypoint x="245" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1b1kcy9_di" bpmnElement="Flow_1b1kcy9">
+        <di:waypoint x="595" y="220" />
+        <di:waypoint x="640" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1lv0ach_di" bpmnElement="Flow_1lv0ach">
+        <di:waypoint x="740" y="220" />
+        <di:waypoint x="810" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1nm1ft4_di" bpmnElement="Flow_1nm1ft4">
+        <di:waypoint x="1160" y="220" />
+        <di:waypoint x="1250" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qo53nk_di" bpmnElement="Flow_0qo53nk">
+        <di:waypoint x="1350" y="220" />
+        <di:waypoint x="1422" y="220" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -44,6 +44,11 @@ No interception layer, no reverse proxy, no gateway sitting between the AI Agent
 real provider — the connector runs as an ordinary BPMN service task wherever you place it,
 typically right after the AI Agent element.
 
+For the whole flow end to end — which component talks to Camunda SaaS, in which direction, and where each
+secret is resolved — see the [sequence diagram](docs/sequence-diagram.md) (also as an
+[SVG image](docs/sequence-diagram.svg) for documents, and as a one-page A4 version of the main process,
+[SVG](docs/sequence-diagram-a4.svg) or [PNG](docs/sequence-diagram-a4.png), for a user manual).
+
 Price data (what a provider charges per model) is the one piece of information the connector can't
 derive on its own. It comes from, in priority order:
 
@@ -379,6 +384,9 @@ If the runtime logs `Failed with code 404` when fetching a process definition (h
 runtime's built-in default — observed on a cluster reporting 8.10.0-alpha5, where
 `https://<region>.api.camunda.io/<cluster-id>` worked and the default `.zeebe.camunda.io` address
 returned 404. Set `CAMUNDA_CLIENT_REST_ADDRESS` in `docker/.env` (see `docker/.env.example`).
+
+The [sequence diagram](docs/sequence-diagram.md) shows the whole flow between this runtime, Camunda SaaS and the
+secrets, including the credential table and the failures described above.
 
 For step-by-step instructions for every platform — local without Docker, Docker Desktop,
 Kubernetes, AWS (ECS Fargate, EKS) and Azure (Container Apps, AKS) — see `DEPLOYMENT-GUIDE.docx`.
