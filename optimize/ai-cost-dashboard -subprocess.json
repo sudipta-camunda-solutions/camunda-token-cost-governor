@@ -10,18 +10,6 @@
       "definitions": [
         {
           "identifier": "definition-1",
-          "key": "ai-agent-task-cost-tracking",
-          "name": "AI Agent Task with token/cost tracking",
-          "displayName": "AI Agent Task with token/cost tracking",
-          "versions": [
-            "all"
-          ],
-          "tenantIds": [
-            "<default>"
-          ]
-        },
-        {
-          "identifier": "definition-2",
           "key": "ai-agent-subprocess-cost-tracking",
           "name": "AI Agent Sub-process with token/cost tracking",
           "displayName": "AI Agent Sub-process with token/cost tracking",
@@ -37,6 +25,7 @@
         "tableColumns": {
           "includeNewVariables": true,
           "excludedColumns": [
+            "processDefinitionKey",
             "processDefinitionId",
             "businessKey",
             "duration",
@@ -52,14 +41,10 @@
             "variable:business_researchAnalystTotalTokens",
             "variable:business_quickAnswerInputTokens",
             "variable:business_quickAnswerOutputTokens",
-            "variable:business_quickAnswerTotalTokens",
-            "variable:business_taskAgentInputTokens",
-            "variable:business_taskAgentOutputTokens",
-            "variable:business_taskAgentTotalTokens"
+            "variable:business_quickAnswerTotalTokens"
           ],
           "includedColumns": [],
           "columnOrder": [
-            "processDefinitionKey",
             "processInstanceId",
             "startDate",
             "endDate",
@@ -225,72 +210,9 @@
     }
   },
   {
-    "id": "97f358a7-ed69-5ad5-9dc4-efd865fdbebc",
+    "id": "728eee63-f48a-51e0-a9cb-d0e321aa1929",
     "exportEntityType": "single_process_report",
-    "name": "4 - Task agent cost (micro-USD)",
-    "description": "Total cost of Task agent over all completed instances, in micro-USD (1,000,000 = 1 USD; variable business_taskAgentCost).",
-    "sourceIndexVersion": 11,
-    "collectionId": null,
-    "data": {
-      "definitions": [
-        {
-          "identifier": "definition-1",
-          "key": "ai-agent-task-cost-tracking",
-          "name": "AI Agent Task with token/cost tracking",
-          "displayName": "AI Agent Task with token/cost tracking",
-          "versions": [
-            "all"
-          ],
-          "tenantIds": [
-            "<default>"
-          ]
-        }
-      ],
-      "configuration": {
-        "aggregationTypes": [
-          {
-            "type": "sum",
-            "value": null
-          }
-        ],
-        "showInstanceCount": true
-      },
-      "filter": [
-        {
-          "type": "completedInstancesOnly",
-          "data": null,
-          "filterLevel": "instance",
-          "appliedTo": [
-            "all"
-          ]
-        }
-      ],
-      "view": {
-        "entity": "variable",
-        "properties": [
-          {
-            "name": "business_taskAgentCost",
-            "type": "Long"
-          }
-        ]
-      },
-      "groupBy": {
-        "type": "none",
-        "value": null
-      },
-      "distributedBy": {
-        "type": "none",
-        "value": null
-      },
-      "visualization": "number",
-      "managementReport": false,
-      "instantPreviewReport": false
-    }
-  },
-  {
-    "id": "bcbe968c-465e-5b1b-adc0-1e3a493a2c27",
-    "exportEntityType": "single_process_report",
-    "name": "5 - Total cost, all agents (USD)",
+    "name": "4 - Total cost, all agents (USD)",
     "description": "Total cost of all completed instances, all agents together.",
     "sourceIndexVersion": 11,
     "collectionId": null,
@@ -298,18 +220,6 @@
       "definitions": [
         {
           "identifier": "definition-1",
-          "key": "ai-agent-task-cost-tracking",
-          "name": "AI Agent Task with token/cost tracking",
-          "displayName": "AI Agent Task with token/cost tracking",
-          "versions": [
-            "all"
-          ],
-          "tenantIds": [
-            "<default>"
-          ]
-        },
-        {
-          "identifier": "definition-2",
           "key": "ai-agent-subprocess-cost-tracking",
           "name": "AI Agent Sub-process with token/cost tracking",
           "displayName": "AI Agent Sub-process with token/cost tracking",
@@ -363,9 +273,9 @@
     }
   },
   {
-    "id": "7004e85c-0586-5ecf-a270-dd3929b917c7",
+    "id": "38f39c0e-c2ae-5731-9350-2d020a9e1eae",
     "exportEntityType": "single_process_report",
-    "name": "6 - Total spend this month (USD)",
+    "name": "5 - Total spend this month (USD)",
     "description": "Total cost of completed instances started in the current calendar month.",
     "sourceIndexVersion": 11,
     "collectionId": null,
@@ -373,18 +283,6 @@
       "definitions": [
         {
           "identifier": "definition-1",
-          "key": "ai-agent-task-cost-tracking",
-          "name": "AI Agent Task with token/cost tracking",
-          "displayName": "AI Agent Task with token/cost tracking",
-          "versions": [
-            "all"
-          ],
-          "tenantIds": [
-            "<default>"
-          ]
-        },
-        {
-          "identifier": "definition-2",
           "key": "ai-agent-subprocess-cost-tracking",
           "name": "AI Agent Sub-process with token/cost tracking",
           "displayName": "AI Agent Sub-process with token/cost tracking",
@@ -455,9 +353,9 @@
     }
   },
   {
-    "id": "11c13699-4d5f-5915-bb9c-604165672083",
+    "id": "1aeae684-36ca-5b8a-91f3-3fd5b75f72b3",
     "exportEntityType": "single_process_report",
-    "name": "7 - Total spend this year (USD)",
+    "name": "6 - Total spend this year (USD)",
     "description": "Total cost of completed instances started in the current calendar year.",
     "sourceIndexVersion": 11,
     "collectionId": null,
@@ -465,18 +363,6 @@
       "definitions": [
         {
           "identifier": "definition-1",
-          "key": "ai-agent-task-cost-tracking",
-          "name": "AI Agent Task with token/cost tracking",
-          "displayName": "AI Agent Task with token/cost tracking",
-          "versions": [
-            "all"
-          ],
-          "tenantIds": [
-            "<default>"
-          ]
-        },
-        {
-          "identifier": "definition-2",
           "key": "ai-agent-subprocess-cost-tracking",
           "name": "AI Agent Sub-process with token/cost tracking",
           "displayName": "AI Agent Sub-process with token/cost tracking",
@@ -547,9 +433,9 @@
     }
   },
   {
-    "id": "044f3869-c873-5220-9560-a9337b276e66",
+    "id": "a7b5fe42-75a7-5181-b19f-07dbac59add9",
     "exportEntityType": "single_process_report",
-    "name": "8 - Average cost per case (USD)",
+    "name": "7 - Average cost per case (USD)",
     "description": "Average cost of one completed instance. Turn on the target in the report configuration to compare it with a human-handled case.",
     "sourceIndexVersion": 11,
     "collectionId": null,
@@ -557,18 +443,6 @@
       "definitions": [
         {
           "identifier": "definition-1",
-          "key": "ai-agent-task-cost-tracking",
-          "name": "AI Agent Task with token/cost tracking",
-          "displayName": "AI Agent Task with token/cost tracking",
-          "versions": [
-            "all"
-          ],
-          "tenantIds": [
-            "<default>"
-          ]
-        },
-        {
-          "identifier": "definition-2",
           "key": "ai-agent-subprocess-cost-tracking",
           "name": "AI Agent Sub-process with token/cost tracking",
           "displayName": "AI Agent Sub-process with token/cost tracking",
@@ -622,9 +496,9 @@
     }
   },
   {
-    "id": "b3eeabd9-3e60-5ff7-a0a4-d8200f3ca4c7",
+    "id": "765b1969-8612-530a-985e-3d3276c2f244",
     "exportEntityType": "single_process_report",
-    "name": "9 - Tokens of each process instance",
+    "name": "8 - Tokens of each process instance",
     "description": "One row per completed instance: the input, output and total tokens of each agent (its total over all model calls), next to the agent name(s).",
     "sourceIndexVersion": 11,
     "collectionId": null,
@@ -632,18 +506,6 @@
       "definitions": [
         {
           "identifier": "definition-1",
-          "key": "ai-agent-task-cost-tracking",
-          "name": "AI Agent Task with token/cost tracking",
-          "displayName": "AI Agent Task with token/cost tracking",
-          "versions": [
-            "all"
-          ],
-          "tenantIds": [
-            "<default>"
-          ]
-        },
-        {
-          "identifier": "definition-2",
           "key": "ai-agent-subprocess-cost-tracking",
           "name": "AI Agent Sub-process with token/cost tracking",
           "displayName": "AI Agent Sub-process with token/cost tracking",
@@ -659,6 +521,7 @@
         "tableColumns": {
           "includeNewVariables": true,
           "excludedColumns": [
+            "processDefinitionKey",
             "processDefinitionId",
             "businessKey",
             "duration",
@@ -672,12 +535,10 @@
             "variable:business_totalCostUsd",
             "variable:business_totalCost",
             "variable:business_researchAnalystCost",
-            "variable:business_quickAnswerCost",
-            "variable:business_taskAgentCost"
+            "variable:business_quickAnswerCost"
           ],
           "includedColumns": [],
           "columnOrder": [
-            "processDefinitionKey",
             "processInstanceId",
             "startDate",
             "endDate",
@@ -715,9 +576,9 @@
     }
   },
   {
-    "id": "63720c3b-17bb-5bff-a959-01295bc1df6f",
+    "id": "6c85fa31-22ca-5216-9499-049fcf68e0fb",
     "exportEntityType": "dashboard",
-    "name": "AI cost",
+    "name": "Subprocess AI cost",
     "description": "Cost of the AI agent flow: per instance, per agent, this month, this year and the average per case.",
     "sourceIndexVersion": 8,
     "collectionId": null,
@@ -729,7 +590,7 @@
           "y": 0
         },
         "dimensions": {
-          "width": 6,
+          "width": 9,
           "height": 3
         },
         "type": "optimize_report",
@@ -738,31 +599,18 @@
       {
         "id": "ceee425c-e6bd-57f3-9936-dfaf47afbe71",
         "position": {
-          "x": 6,
+          "x": 9,
           "y": 0
         },
         "dimensions": {
-          "width": 6,
+          "width": 9,
           "height": 3
         },
         "type": "optimize_report",
         "configuration": null
       },
       {
-        "id": "97f358a7-ed69-5ad5-9dc4-efd865fdbebc",
-        "position": {
-          "x": 12,
-          "y": 0
-        },
-        "dimensions": {
-          "width": 6,
-          "height": 3
-        },
-        "type": "optimize_report",
-        "configuration": null
-      },
-      {
-        "id": "bcbe968c-465e-5b1b-adc0-1e3a493a2c27",
+        "id": "728eee63-f48a-51e0-a9cb-d0e321aa1929",
         "position": {
           "x": 0,
           "y": 3
@@ -775,7 +623,7 @@
         "configuration": null
       },
       {
-        "id": "7004e85c-0586-5ecf-a270-dd3929b917c7",
+        "id": "38f39c0e-c2ae-5731-9350-2d020a9e1eae",
         "position": {
           "x": 5,
           "y": 3
@@ -788,7 +636,7 @@
         "configuration": null
       },
       {
-        "id": "11c13699-4d5f-5915-bb9c-604165672083",
+        "id": "1aeae684-36ca-5b8a-91f3-3fd5b75f72b3",
         "position": {
           "x": 9,
           "y": 3
@@ -801,7 +649,7 @@
         "configuration": null
       },
       {
-        "id": "044f3869-c873-5220-9560-a9337b276e66",
+        "id": "a7b5fe42-75a7-5181-b19f-07dbac59add9",
         "position": {
           "x": 13,
           "y": 3
@@ -827,7 +675,7 @@
         "configuration": null
       },
       {
-        "id": "b3eeabd9-3e60-5ff7-a0a4-d8200f3ca4c7",
+        "id": "765b1969-8612-530a-985e-3d3276c2f244",
         "position": {
           "x": 0,
           "y": 13

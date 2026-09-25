@@ -1,26 +1,27 @@
 #!/usr/bin/env python3
-"""Generate the Optimize entity-import file for the "AI cost" dashboard (one table, one cost tile per agent, four
-summary reports and the dashboard).
+"""Generate the Optimize entity-import file for the "AI cost" dashboard (a cost table, one cost tile per agent, four
+summary reports, a token table and the dashboard).
 
     python optimize/generate-dashboard.py                      # the two demo processes and their agents -> optimize/ai-cost-dashboard.json
     python optimize/generate-dashboard.py --process my-agent-process
     python optimize/generate-dashboard.py --process order-agent="Order agent" --process claims-agent -o my-dashboard.json
-    python optimize/generate-dashboard.py --process my-agent-process --agent "Triage=business_triageCost"
+    python optimize/generate-dashboard.py --process my-agent-process --agent "Triage=business_triage"
 
     # the sub-process demo on its own (optimize/ai-cost-dashboard -subprocess.json)
     python optimize/generate-dashboard.py --process ai-agent-subprocess-cost-tracking="AI Agent Sub-process with token/cost tracking" \\
-        --agent "Research Analyst=business_researchAnalystCost" --agent "Quick Answer=business_quickAnswerCost" \\
+        --agent "Research Analyst=business_researchAnalyst" --agent "Quick Answer=business_quickAnswer" \\
         --name "Subprocess AI cost" -o "optimize/ai-cost-dashboard -subprocess.json"
 
 Every --process becomes one data source (definition) of the total, month, year, average and table reports, so those add
 up over all the listed processes. Optimize has no wildcard for "all processes": each one needs its concrete process ID
 (the BPMN process id), and every listed process must be a data source of the collection you import into.
 
---agent LABEL=VARIABLE[@PROCESS_ID] adds one tile that sums a process variable holding that agent's cost in whole
-micro-USD (1,000,000 = 1 USD). The tile reads only PROCESS_ID (all listed processes if it is left out). Optimize's
-Variable view aggregates one variable per report, so an instance with several agents needs one variable per agent, which
-the process has to write. Without --agent and without --process the demo agents (DEMO_AGENTS) are used; with --process
-and no --agent there are no agent tiles.
+--agent LABEL=PREFIX[@PROCESS_ID] describes one agent. The process has to write, for that agent, four variables named
+after PREFIX: PREFIX+Cost (its cost in whole micro-USD, 1,000,000 = 1 USD), PREFIX+InputTokens, PREFIX+OutputTokens and
+PREFIX+TotalTokens. The agent gets a tile that sums PREFIX+Cost, reading only PROCESS_ID (all listed processes if it is
+left out), and its tokens show in the token table. Optimize's Variable view aggregates one variable per report, so an
+instance with several agents needs one set of variables per agent. Without --agent and without --process the demo
+agents (DEMO_AGENTS) are used; with --process and no --agent there are no agent tiles and no token table.
 
 The JSON layout, the schema versions (reports 11, dashboard 8) and the list of valid report combinations come from
 Optimize's own source at git tag 8.10.0-alpha5. If your Optimize refuses the file with a version message, put the
@@ -28,7 +29,7 @@ Optimize's own source at git tag 8.10.0-alpha5. If your Optimize refuses the fil
 
 The variables the reports read must be exported to Optimize: on new Camunda 8.10 SaaS clusters only variables named
 business_* are, which is why the demo processes write business_totalCostUsd (USD), business_totalCost (whole
-micro-dollars, 1,000,000 = 1 USD), business_costAgent and one whole-micro-dollar variable per agent.
+micro-dollars, 1,000,000 = 1 USD), business_costAgent and the per-agent variables above.
 """
 import argparse
 import json
@@ -45,12 +46,14 @@ DEMO_PROCESSES = [
     ("ai-agent-subprocess-cost-tracking", "AI Agent Sub-process with token/cost tracking"),
 ]
 
-# (label, variable, process id): the per-agent cost variables the demo processes write, in whole micro-USD.
+# (label, variable prefix, process id): the demo processes write <prefix>Cost (whole micro-USD), <prefix>InputTokens,
+# <prefix>OutputTokens and <prefix>TotalTokens for each of these agents.
 DEMO_AGENTS = [
-    ("Research Analyst", "business_researchAnalystCost", "ai-agent-subprocess-cost-tracking"),
-    ("Quick Answer", "business_quickAnswerCost", "ai-agent-subprocess-cost-tracking"),
-    ("Task agent", "business_taskAgentCost", "ai-agent-task-cost-tracking"),
+    ("Research Analyst", "business_researchAnalyst", "ai-agent-subprocess-cost-tracking"),
+    ("Quick Answer", "business_quickAnswer", "ai-agent-subprocess-cost-tracking"),
+    ("Task agent", "business_taskAgent", "ai-agent-task-cost-tracking"),
 ]
+TOKEN_SUFFIXES = ("InputTokens", "OutputTokens", "TotalTokens")
 
 COST_USD = "business_totalCostUsd"
 COST_MICRO_USD = "business_totalCost"
@@ -163,7 +166,8 @@ def build(processes, agents=(), versions=("all",), tenant=DEFAULT_TENANT, name="
             report_defs,
         )
 
-    def agent_report(number, label, variable, process_key):
+    def agent_report(number, label, prefix, process_key):
+        variable = prefix + "Cost"
         if process_key is None:
             agent_defs = defs
         elif process_key in by_key:
@@ -182,37 +186,49 @@ def build(processes, agents=(), versions=("all",), tenant=DEFAULT_TENANT, name="
             agent_defs,
         )
 
-    excluded = ["processDefinitionId", "businessKey", "duration", "engineName", "tenantId"]
-    excluded_variables = ["variable:" + legacy for legacy in LEGACY_VARIABLES]
-    order = ["processInstanceId", "startDate", "endDate"]
-    if several:
-        # tell the processes apart in the table
-        order.insert(0, "processDefinitionKey")
-    else:
-        excluded.insert(0, "processDefinitionKey")
-    # The per-agent variables are not listed here on purpose: includeNewVariables appends them, and Optimize may refuse
-    # a column for a variable that no instance has written yet.
-    order += ["variable:" + COST_USD, "variable:" + COST_MICRO_USD, "variable:" + COST_AGENT]
+    cost_variables = [prefix + "Cost" for _, prefix, _ in agents]
+    token_variables = [prefix + suffix for _, prefix, _ in agents for suffix in TOKEN_SUFFIXES]
 
-    r1 = report(
+    def table_report(report_name, description, shown_variables, hidden_variables):
+        """Raw data table. The columns are the process ones plus the process variables in `shown_variables`, in that
+        order; every other variable Optimize knows is appended by includeNewVariables unless it is hidden. The
+        per-agent variables are not listed in `shown_variables` on purpose: Optimize may refuse a column for a variable
+        that no instance has written yet, and includeNewVariables appends them anyway."""
+        excluded = ["processDefinitionId", "businessKey", "duration", "engineName", "tenantId"]
+        order = ["processInstanceId", "startDate", "endDate"]
+        if several:
+            # tell the processes apart in the table
+            order.insert(0, "processDefinitionKey")
+        else:
+            excluded.insert(0, "processDefinitionKey")
+        order += ["variable:" + name for name in shown_variables]
+        excluded += ["variable:" + name for name in [*LEGACY_VARIABLES, *hidden_variables]]
+        return report(
+            report_name,
+            description,
+            {"entity": None, "properties": ["rawData"]},
+            "table",
+            [completed_only()],
+            {
+                "tableColumns": {
+                    "includeNewVariables": True,
+                    "excludedColumns": excluded,
+                    "includedColumns": [],
+                    "columnOrder": order,
+                }
+            },
+        )
+
+    r1 = table_report(
         "1 - Cost of each process instance",
         "One row per completed instance: total cost in USD and in micro-USD (1,000,000 = 1 USD), the agent name(s) "
         "and the cost of each agent in micro-USD.",
-        {"entity": None, "properties": ["rawData"]},
-        "table",
-        [completed_only()],
-        {
-            "tableColumns": {
-                "includeNewVariables": True,
-                "excludedColumns": excluded + excluded_variables,
-                "includedColumns": [],
-                "columnOrder": order,
-            }
-        },
+        [COST_USD, COST_MICRO_USD, COST_AGENT],
+        token_variables,
     )
     agent_reports = [
-        agent_report(number, label, variable, process_key)
-        for number, (label, variable, process_key) in enumerate(agents, start=2)
+        agent_report(number, label, prefix, process_key)
+        for number, (label, prefix, process_key) in enumerate(agents, start=2)
     ]
     first = 2 + len(agent_reports)
     r_total = number_report(
@@ -268,6 +284,17 @@ def build(processes, agents=(), versions=("all",), tenant=DEFAULT_TENANT, name="
         tile(r_average, 13, y, 5, 3),
         tile(r1, 0, y + 3, 18, 7),
     ]
+    token_reports = []
+    if agents:
+        r_tokens = table_report(
+            f"{first + 4} - Tokens of each process instance",
+            "One row per completed instance: the input, output and total tokens of each agent (its total over all "
+            "model calls), next to the agent name(s).",
+            [COST_AGENT],
+            [COST_USD, COST_MICRO_USD, *cost_variables],
+        )
+        token_reports.append(r_tokens)
+        tiles.append(tile(r_tokens, 0, y + 10, 18, 7))
 
     dashboard = {
         "id": rid("dashboard " + name),
@@ -284,7 +311,7 @@ def build(processes, agents=(), versions=("all",), tenant=DEFAULT_TENANT, name="
         # exists.
         "availableFilters": [],
     }
-    return [r1, *agent_reports, r_total, r_month, r_year, r_average, dashboard]
+    return [r1, *agent_reports, r_total, r_month, r_year, r_average, *token_reports, dashboard]
 
 
 def check(entities, process_count):
@@ -323,11 +350,11 @@ def parse_process(value):
 
 def parse_agent(value):
     label, sep, rest = value.partition("=")
-    variable, _, process = rest.partition("@")
-    label, variable, process = label.strip(), variable.strip(), process.strip()
-    if not sep or not label or not variable:
-        raise argparse.ArgumentTypeError("expected LABEL=VARIABLE[@PROCESS_ID]")
-    return label, variable, (process or None)
+    prefix, _, process = rest.partition("@")
+    label, prefix, process = label.strip(), prefix.strip(), process.strip()
+    if not sep or not label or not prefix:
+        raise argparse.ArgumentTypeError("expected LABEL=PREFIX[@PROCESS_ID]")
+    return label, prefix, (process or None)
 
 
 def main(argv=None):
@@ -336,10 +363,11 @@ def main(argv=None):
     ap.add_argument("--process", action="append", type=parse_process, metavar="ID[=NAME]",
                     help="BPMN process id (and optional display name) to use as a data source; repeat for several. "
                          "Default: the two demo processes.")
-    ap.add_argument("--agent", action="append", type=parse_agent, metavar="LABEL=VARIABLE[@PROCESS_ID]",
-                    help="add a cost tile for one agent: the process variable holding its cost in whole micro-USD, "
-                         "read from PROCESS_ID only (default: all listed processes). Repeat for several. "
-                         "Default: the demo agents when no --process is given, otherwise none.")
+    ap.add_argument("--agent", action="append", type=parse_agent, metavar="LABEL=PREFIX[@PROCESS_ID]",
+                    help="add one agent: a cost tile on PREFIX+Cost (whole micro-USD), read from PROCESS_ID only "
+                         "(default: all listed processes), and its PREFIX+InputTokens/OutputTokens/TotalTokens in the "
+                         "token table. Repeat for several. Default: the demo agents when no --process is given, "
+                         "otherwise none.")
     ap.add_argument("--name", default="AI cost", help="dashboard name (default: %(default)s)")
     ap.add_argument("--versions", choices=["all", "latest"], default="all", help="process versions (default: all)")
     ap.add_argument("--tenant", default=DEFAULT_TENANT, help="tenant id (default: %(default)s, Camunda 8's default)")

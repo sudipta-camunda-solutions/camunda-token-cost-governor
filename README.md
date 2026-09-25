@@ -98,6 +98,15 @@ Two behaviors worth knowing:
 - A secret that exists but is left blank, or whose table doesn't cover a particular model, falls
   back to the bundled default table per-model, not all-or-nothing.
 
+**How the cost of one call is calculated.** Each price is turned into whole micro-dollars per 1,000
+tokens (USD per million x 1000), and the cost is the input side plus the output side, each rounded half
+up: `cost = round(inputTokens x inputPer1k / 1000) + round(outputTokens x outputPer1k / 1000)`. For
+`anthropic:claude-haiku-4-5` in the bundled table (1.00 USD in, 5.00 USD out per million tokens, so 1,000
+and 5,000 micro-USD per 1k) a call with 602 input and 27 output tokens costs 602 + 135 = **737 micro-USD**
+(0.000737 USD). The token counts of an AI Agent element are its totals over all its model calls
+(`agent.context.metrics.tokenUsage`). `tokenCostResult.priceSource` says whether the secret
+(`CLUSTER_SECRET`) or the bundled table (`DEFAULT_TABLE`) supplied the price.
+
 ## Configuring the connector in Modeler
 
 One operation, four required fields plus one optional (`element-templates/token-cost-governor.json`
@@ -235,7 +244,11 @@ files' `business_totalCost`, `business_totalCostUsd` and `business_costAgent` va
    agent needs a variable per agent, written by that agent's Token cost task: `business_taskAgentCost` =
    `=tokenCostResult.costMicros` in the AI Agent Task demo, and `business_researchAnalystCost` /
    `business_quickAnswerCost` = `=tokenCostResult.costMicros` on the Research Analyst / Quick Answer tasks of the
-   sub-process demo.
+   sub-process demo. The same task also writes that agent's tokens, each an output from `tokenCostResult`:
+   `business_researchAnalystInputTokens` = `=tokenCostResult.inputTokens`, `...OutputTokens` =
+   `=tokenCostResult.outputTokens` and `...TotalTokens` = `=tokenCostResult.totalTokens` (likewise
+   `business_quickAnswer...` and `business_taskAgent...`), so Optimize can show input, output and total tokens per agent.
+   That makes eight output lines per Token cost task.
 
    In the sub-process demo one instance runs two agents, so `business_costAgent` lists all of them: the Start event
    sets it to `""` and each Token cost task sets it to `=if business_costAgent = "" then tokenCostResult.agent else
@@ -256,12 +269,12 @@ report combinations. So there is no bar chart of cost per month or per agent in 
 `governor_cost_usd_total` for that. Optimize does well at totals and averages for a slice (this month, this year,
 one agent) and a per-instance table that exports to CSV.
 
-**Import the ready-made dashboard.** [`optimize/ai-cost-dashboard.json`](optimize/ai-cost-dashboard.json) holds eight
+**Import the ready-made dashboard.** [`optimize/ai-cost-dashboard.json`](optimize/ai-cost-dashboard.json) holds nine
 reports and a dashboard, `AI cost`:
 
 | # | Report | Shows |
 |---|---|---|
-| 1 | Cost of each process instance | Raw data table of completed instances: ID, start, end, `business_totalCostUsd`, `business_totalCost` (micro-USD), `business_costAgent` (all agents of the instance), plus the per-agent cost variables, which Optimize adds as columns |
+| 1 | Cost of each process instance | Raw data table of completed instances: ID, start, end, `business_totalCostUsd`, `business_totalCost` (micro-USD), `business_costAgent` (all agents of the instance), plus the per-agent cost variables, which Optimize adds as columns; the token columns are hidden here |
 | 2 | Research Analyst cost (micro-USD) | Number, sum of `business_researchAnalystCost`, sub-process demo only |
 | 3 | Quick Answer cost (micro-USD) | Number, sum of `business_quickAnswerCost`, sub-process demo only |
 | 4 | Task agent cost (micro-USD) | Number, sum of `business_taskAgentCost`, AI Agent Task demo only |
@@ -269,6 +282,7 @@ reports and a dashboard, `AI cost`:
 | 6 | Total spend this month (USD) | Number, sum, instances started this calendar month |
 | 7 | Total spend this year (USD) | Number, sum, instances started this calendar year |
 | 8 | Average cost per case (USD) | Number, average; the human-flow target is off until you set it |
+| 9 | Tokens of each process instance | Raw data table: ID, start, end, `business_costAgent`, and per agent the input, output and total tokens (`business_<agent>InputTokens`, `...OutputTokens`, `...TotalTokens`); the cost columns are hidden here |
 
 1. In Optimize create a collection (`AI cost`) and add both demo processes (`ai-agent-task-cost-tracking` and
    `ai-agent-subprocess-cost-tracking`) as data sources, all versions. The first process in the file needs at least
@@ -290,15 +304,18 @@ reports and a dashboard, `AI cost`:
 **Cost per agent.** Each agent tile reads only the process that writes its variable, so its numbers are not mixed with
 the other demo. Import after the updated BPMN files are deployed and Optimize has imported at least one new instance of
 each process: older instances have no per-agent variable and Optimize does not back-fill. For each extra agent the
-process must write its own cost variable and you add a tile with `--agent "LABEL=VARIABLE[@PROCESS_ID]"` (see below).
+process must write four variables named after a prefix (`<prefix>Cost`, `<prefix>InputTokens`, `<prefix>OutputTokens`,
+`<prefix>TotalTokens`) and you add the agent with `--agent "LABEL=PREFIX[@PROCESS_ID]"` (see below): it gets a cost tile,
+and its tokens appear in the token table.
 
 **Sub-process demo on its own.** [`optimize/ai-cost-dashboard -subprocess.json`](<optimize/ai-cost-dashboard -subprocess.json>)
 is the same dashboard (`Subprocess AI cost`) restricted to `ai-agent-subprocess-cost-tracking`: the Research Analyst and
-Quick Answer tiles, the total, this month, this year, the average per case and the instance table. It is generated too:
+Quick Answer tiles, the total, this month, this year, the average per case, the instance table and the token table. It
+is generated too:
 
 ```
 python optimize/generate-dashboard.py --process ai-agent-subprocess-cost-tracking="AI Agent Sub-process with token/cost tracking" \
-    --agent "Research Analyst=business_researchAnalystCost" --agent "Quick Answer=business_quickAnswerCost" \
+    --agent "Research Analyst=business_researchAnalyst" --agent "Quick Answer=business_quickAnswer" \
     --name "Subprocess AI cost" -o "optimize/ai-cost-dashboard -subprocess.json"
 ```
 
@@ -306,8 +323,8 @@ python optimize/generate-dashboard.py --process ai-agent-subprocess-cost-trackin
 demo processes as data sources, so the numbers add
 up over both, and the table shows the process ID per row. For your own processes run
 `python optimize/generate-dashboard.py --process my-agent-process` (repeat `--process` for several; `--process
-ID="Display name"`, `--versions latest`, `--name`, `-o file` are also available, and `--agent` adds agent tiles: without
-`--process` the demo agents are used, with `--process` there are none unless you pass `--agent`), or add a process to an already-imported report
+ID="Display name"`, `--versions latest`, `--name`, `-o file` are also available, and `--agent` adds agent tiles and the token table:
+without `--process` the demo agents are used, with `--process` there are none unless you pass `--agent`), or add a process to an already-imported report
 in the report builder (**Add** next to the data source). Optimize has no "all processes" data source, and a process
 instance cannot be a data source: a report reads all instances of the listed processes, and you narrow it with
 filters (state, dates, `business_costAgent`). Importing the same file twice creates a second copy.

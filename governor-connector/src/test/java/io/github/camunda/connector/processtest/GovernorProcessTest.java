@@ -158,7 +158,10 @@ class GovernorProcessTest {
         .hasVariable("business_totalCost", COST_MICROS_PER_CALL)
         .hasVariable("business_totalCostUsd", 1.25)
         .hasVariable("business_costAgent", "task-agent")
-        .hasVariable("business_taskAgentCost", COST_MICROS_PER_CALL);
+        .hasVariable("business_taskAgentCost", COST_MICROS_PER_CALL)
+        .hasVariable("business_taskAgentInputTokens", 100L)
+        .hasVariable("business_taskAgentOutputTokens", 50L)
+        .hasVariable("business_taskAgentTotalTokens", 150L);
 
     // The point of this test: the connector must RECEIVE real token counts, model and agent name -
     // an earlier version passed a wrong FEEL path and the job failed validation with null tokens
@@ -277,7 +280,13 @@ class GovernorProcessTest {
         .hasVariable("business_totalCostUsd", (analystMicros + quickMicros) / 1_000_000.0)
         .hasVariable("business_costAgent", "research-analyst, quick-answer")
         .hasVariable("business_researchAnalystCost", analystMicros)
-        .hasVariable("business_quickAnswerCost", quickMicros);
+        .hasVariable("business_quickAnswerCost", quickMicros)
+        .hasVariable("business_researchAnalystInputTokens", (long) ANALYST_INPUT_TOKENS)
+        .hasVariable("business_researchAnalystOutputTokens", (long) ANALYST_OUTPUT_TOKENS)
+        .hasVariable("business_researchAnalystTotalTokens", (long) (ANALYST_INPUT_TOKENS + ANALYST_OUTPUT_TOKENS))
+        .hasVariable("business_quickAnswerInputTokens", (long) QUICK_INPUT_TOKENS)
+        .hasVariable("business_quickAnswerOutputTokens", (long) QUICK_OUTPUT_TOKENS)
+        .hasVariable("business_quickAnswerTotalTokens", (long) (QUICK_INPUT_TOKENS + QUICK_OUTPUT_TOKENS));
 
     Assertions.assertEquals(2, connectorCalls.size(), "one Token cost call per agent");
     Map<String, Object> analystCall = connectorCalls.get(0);
