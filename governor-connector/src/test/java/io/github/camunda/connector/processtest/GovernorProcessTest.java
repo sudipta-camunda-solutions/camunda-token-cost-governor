@@ -274,7 +274,9 @@ class GovernorProcessTest {
             "Activity_1kyv3gj", "Tool_GetDateTime1", "Activity_0vkhe3f", "Activity_0alays1", "Activity_1vgqpep", "EndEvent_Done")
         .hasVariable("business_totalCostMicros", analystMicros + quickMicros)
         .hasVariable("business_totalCostUsd", (analystMicros + quickMicros) / 1_000_000.0)
-        .hasVariable("business_costAgent", "quick-answer");
+        .hasVariable("business_costAgent", "quick-answer")
+        .hasVariable("business_researchAnalystCostUsd", analystMicros / 1_000_000.0)
+        .hasVariable("business_quickAnswerCostUsd", quickMicros / 1_000_000.0);
 
     Assertions.assertEquals(2, connectorCalls.size(), "one Token cost call per agent");
     Map<String, Object> analystCall = connectorCalls.get(0);
